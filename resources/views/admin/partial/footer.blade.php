@@ -24,6 +24,7 @@
 <script    src="{{asset('/assets/admin')}}/usa_states.min.js"></script>
 <!-- ChartJS -->
 <script    src="{{asset('/assets/admin')}}/Chart.min.js"></script>
+<script    src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
 
 <!-- AdminLTE for demo purposes -->
 <script    src="{{asset('/assets/admin')}}/demo.js"></script>
@@ -34,8 +35,34 @@
 <script>
      $('.select2').select2();
 
-</script>
+     toastr.options = {
+  "closeButton": false,
+  "debug": false,
+  "newestOnTop": false,
+  "progressBar": false,
+  "positionClass": "toast-top-right",
+  "preventDuplicates": false,
+  "onclick": null,
+  "showDuration": "300",
+  "hideDuration": "1000",
+  "timeOut": "5000",
+  "extendedTimeOut": "1000",
+  "showEasing": "swing",
+  "hideEasing": "linear",
+  "showMethod": "fadeIn",
+  "hideMethod": "fadeOut"
+}
 
+
+</script>
+<script>
+    @if(Session::get('success')) 
+    toastr.success('{!! Session::get('success') !!}')
+    @endif
+    @if(Session::get('error'))
+    toastr.success('{!! Session::get('error') !!}')   
+    @endif    
+</script>
 
 
 </body>

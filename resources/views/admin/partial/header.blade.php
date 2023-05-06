@@ -18,6 +18,7 @@
     <meta name="csrf-token" content="{{csrf_token()}}">
     <!-- Theme style -->
     <link rel="stylesheet" href="{{asset('/assets/admin/')}}/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
     <!-- <script   src="{{asset('/assets/admin/')}}/ckeditor/ckeditor.js"></script> -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -31,9 +32,7 @@
             <li class="nav-item">
                 <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
             </li>
-            <li class="nav-item d-none d-sm-inline-block">
-                <a href="{{url('/')}}" class="nav-link">Home</a>
-            </li>
+           
 
         </ul>
 

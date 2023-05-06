@@ -15,27 +15,35 @@ Route::group(['prefix'=>'admin',
   Route::get('/logout', [AdminController::class, 'logout']);   
   
     Route::get('/dashboard', [DashboardController::class, 'index']); 
-    Route::get('/order', [OrderController::class, 'index']);
-    Route::post('/order', [OrderController::class, 'store']);
-    Route::get('/order/create', [OrderController::class, 'create']);
-    Route::get('/order/{id}/edit', [OrderController::class, 'edit']); 
+    // Route::get('/order', [OrderController::class, 'index']);
+    // Route::post('/order', [OrderController::class, 'store']);
+    // Route::get('/order/create', [OrderController::class, 'create']);
+    // Route::get('/order/{id}/edit', [OrderController::class, 'edit']); 
+
+    Route::get('/order/invoiceList', [OrderController::class, 'invoiceList']);
     Route::get('/order/order_status', [OrderController::class, 'order_status']);
     Route::post('/order/newProductSelectionChange', [OrderController::class, 'newProductSelectionChange']); 
     Route::post('/order/newProductEditSelectionChange', [OrderController::class, 'newProductEditSelectionChange']); 
     Route::post('/order/newProductUpdateChange', [OrderController::class, 'newProductUpdateChange']); 
     Route::post('/order/ProductUpdateChangeOfNewOrder', [OrderController::class, 'ProductUpdateChangeOfNewOrder']); 
-   
+
     Route::post('/order/{id}', [OrderController::class, 'update']); 
     Route::get('/convertOrder', [OrderController::class, 'convertOrder']); 
     Route::get('/order/editHistory/{id}', [OrderController::class, 'editHistory']); 
     Route::get('/product/report', [OrderController::class, 'productReport']); 
     Route::get('/single_order_invoice/{id}', [OrderController::class, 'single_order_invoice']); 
     Route::get('/orderStatus/report', [OrderController::class, 'orderStatusReport']);
+    Route::post('/storeInvoice', [OrderController::class, 'storeInvoice']);
     Route::get('/currentMonthStaffReport', [OrderController::class, 'currentMonthStaffReport']);
     Route::get('/order/getTotalProductsReport', [OrderController::class, 'getTotalProductsReport']);
     Route::get('/order/sendProductToRedex', [OrderController::class, 'sendProductToRedex']);
     Route::post('/sendProductCourier', [OrderController::class, 'sendProductCourier']);
-
+    Route::get('getAllOrderTrackHistory', [OrderController::class, 'getAllOrderTrackHistory']);   
+    Route::get('storeOrderEditHistory', [OrderController::class, 'storeOrderEditHistory']);   
+    Route::get('getAllProductsForOrder', [OrderController::class, 'getAllProductsForOrder']);   
+    Route::get('getOrderMeta', [OrderController::class, 'getOrderMeta']);   
+    Route::get('getCityByCourierId', [OrderController::class,'getCityByCourierId']);
+    Route::get('getZoneByCityId', [OrderController::class, 'getZoneByCityId']);   
 
     Route::post('/orderExchange', [OrderController::class, 'orderExchange']);
     Route::get('/order/pagination', [OrderController::class, 'pagination']); 
@@ -46,6 +54,7 @@ Route::group(['prefix'=>'admin',
     
     Route::get('/setting', [SettingController::class,'setting']);  
     Route::post('/setting', [SettingController::class,'setting']);
+    Route::resource('order', OrderController::class);
 
      
 });

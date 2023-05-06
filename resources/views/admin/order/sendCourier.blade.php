@@ -19,7 +19,7 @@
     </style>
     <section class="content">
         <div class="container-fluid" style="background:#fff;margin-bottom: 9px;">
-       <form action="{{url('/')}}/admin/order/sendCourier" method="get" >
+       <form action="{{url('/')}}/admin/order/sendProductToRedex" method="get" >
         <div class="row">
             <div class="col-6 col-lg-3">
                 <div class="form-group"  >

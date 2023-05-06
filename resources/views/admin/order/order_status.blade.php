@@ -46,12 +46,15 @@
             class="btn btn-primary order_status  "> Processing <span class="badge badge-light">     {{totalOrder('Processing')}}</span>
     </button>
 
-    <button onClick="orderStatus('pending')" type="button"
+    <button onClick="orderStatus('Payment Pending')" type="button"
             class="btn btn-primary order_status "> Payment Pending <span class="badge badge-light">     {{totalOrder('Payment Pending')}}</span>
     </button>
 
     <button onClick="orderStatus('On Hold')" type="button"
             class="btn btn-primary order_status ">On Hold<span class="badge badge-light">     {{totalOrder('On Hold')}}</span>
+    </button>
+    <button onClick="orderStatus('Completed')" type="button"
+            class="btn btn-primary order_status ">Completed<span class="badge badge-light">     {{totalOrder('Completed')}}</span>
     </button>
     <button onClick="orderStatus('Pending Invoiced')" type="button"
             class="btn btn-primary order_status ">  Pending Invoiced  <span class="badge badge-light">     {{totalOrder('Pending Invoiced')}}</span>
@@ -60,16 +63,14 @@
             class="btn btn-primary order_status ">    Invoiced <span class="badge badge-light">     {{totalOrder('Invoiced')}}</span>
     </button>
 
-    <button onClick="orderStatus('Completed')" type="button"
-            class="btn btn-primary order_status ">Completed<span class="badge badge-light">     {{totalOrder('Completed')}}</span>
-    </button>
-    <button onClick="orderStatus('delivered')" type="button"
-            class="btn btn-primary order_status ">  Delivered  <span class="badge badge-light">     {{totalOrder('delivered')}}</span>
+   
+    <button onClick="orderStatus('Delivered')" type="button"
+            class="btn btn-primary order_status ">  Delivered  <span class="badge badge-light">     {{totalOrder('Delivered')}}</span>
     </button>
       
 
-        <button onClick="orderStatus('return')" type="button"
-                class="btn btn-primary order_status ">  Return  <span class="badge badge-light">     {{totalOrder('return')}}</span>
+        <button onClick="orderStatus('Return')" type="button"
+                class="btn btn-primary order_status ">  Return  <span class="badge badge-light">     {{totalOrder('Return')}}</span>
         </button>
     <button onClick="orderStatus('Canceled')" type="button"
             class="btn btn-primary order_status ">  Cancled  <span class="badge badge-light">     {{totalOrder('Canceled')}}</span>

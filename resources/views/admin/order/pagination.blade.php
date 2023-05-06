@@ -5,8 +5,8 @@
                     <br/>
                     @if(Auth::user()->role_id !=3)
                     <input style="width: 29px;height: 25px;text-align: center;"
-                    type="checkbox" value="{{$order->order_id}}"
-                     class="checkAll ">
+                    type="checkbox" value="{{$order->id}}"
+                     class="checkAll">
                     @endif
                  
                     </td>

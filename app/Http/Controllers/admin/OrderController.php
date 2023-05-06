@@ -9,9 +9,19 @@ use Session;
 use Cache;
 use Auth;
 use App\Models\Order;
+use App\Models\Invoice;
+use App\Models\Store;
+use App\Models\Courier;
+use App\Models\Customer;
+use App\Models\Notification;
+ use App\Models\OrderProduct;
 
 class OrderController extends Controller
 {
+
+    public function __constructor(){
+        date_default_timezone_set('Asia/Dhaka');
+    }
     public function index(Request $request)
     {
         $staff_id = Auth::user()->id;
@@ -39,16 +49,85 @@ class OrderController extends Controller
     public function orderExchange(Request $request)
     {
         $count = count($request->order_id);
+          if($request->staff_id){
+            $data['user_id'] = $request->staff_id;
+              } 
         if ($count > 0) {
             foreach ($request->order_id as $order_id) {
-                $data['user_id'] = $request->staff_id;
-                $data['status'] = $request->order_status;
-                DB::table('orders')->where('id', '=', $order_id)->update($data);
+                if($request->staff_id || $request->order_status){
+                  
+                    if($request->order_status){
+                        $status= $request->order_status;
+                   // $data['status'] = $request->order_status;
+                   $order =   DB::table('orders')->where('id', '=', $order_id)->first();
+                    if ($status == 'Completed') {
+                        $data['orderDate'] = date('Y-m-d');
+                        $data['status'] = "Pending Invoiced";
+                    }
+                     if ($status == 'Delivered') {
+                        $data['deliveryDate'] = date('Y-m-d');
+                        $orderProducts = OrderProduct::query()->where('order_id', '=', $order_id)->get();
+                        foreach ($orderProducts as $orderProduct) {
+                            $stock = Stock::query()->where('product_id', '=', $orderProduct->product_id)->first();
+                            $stock->stock = $stock->stock - $orderProduct->quantity;
+                            $stock->save();
+                        }
+                    }
+                     if ($status == 'Paid') {
+                        $data['completeDate'] = date('Y-m-d');
+                    }
+                     if ($status == 'Return') {
+                        $data['completeDate'] = date('Y-m-d');
+                        $orderProducts = OrderProduct::query()->where('order_id', '=', $order_id)->get();
+                        foreach ($orderProducts as $orderProduct) {
+                            $stock = Stock::query()->where('product_id', '=', $orderProduct->product_id)->first();
+                            $stock->stock = $stock->stock + $orderProduct->quantity;
+                            $stock->save();
+                        }
+                    }
+                     if ($order->courier_id || $status == 'Canceled' || $status == 'On Hold' || $status == 'Payment Pending') {
+                       
+                      if ($status == 'Completed') { 
+                          $data['status']= "Pending Invoiced";
+                      }else{
+                      $data['status'] = $status;
+                      }
+                        $result =   DB::table('orders')->where('id', '=', $order_id)->update($data);
+                        if ($result) {
+                            $response['status'] = 'success';
+                            $response['message'] = 'Successfully Update Status to ' . $status;
+                            $notification = new Notification();
+                            $notification->order_id = $order_id;
+                            $notification->notificaton = Auth::user()->name . ' Successfully Update #BB-' . $order_id . ' Order status to ' . $status;
+                            $notification->user_id = Auth::id();
+                            $notification->save();
+                        }  
+                    }  
+
+                    }
+            
+                }
             }
         }
     }
-
-
+  
+    public function storeInvoice(Request $request)
+    {
+        Order::whereIn('id',$request->order_id)->update(['status'=>'Invoiced']);
+        $ids = serialize($request->order_id);
+        $invoice = new Invoice();
+        $invoice->order_id = $ids;
+        $result = $invoice->save();
+        if ($result) {
+            $response['status'] = 'success';
+            $response['link'] = url('admin/order/invoiceList?id='). $invoice->id;
+        } else {
+            $response['status'] = 'failed';
+            $response['message'] = 'Unsuccessful to Add Order';
+        }
+        return json_encode($response);
+        die();
+    }
     public function editHistory(Request $request, $order_id)
     {
 
@@ -119,161 +198,120 @@ class OrderController extends Controller
    
 
     public function create()
-    {
-
-        $data['areas'] = DB::table('area')->get();
-        $data['products'] = DB::table('product')->select('product_id', 'sku', 'product_title')->get();
+    {   
+        $max_order_id=  Order::max('id');
+        $invoice_id="BB-".$max_order_id+1; 
+        $data['stores']= Store::select('id','storeName')->where('status','Active')->get();
+        $data['couriers']= Courier::select('id','courierName')->where('status','Active')->get();
+        $data['products'] = DB::table('products')->get();
+        $data['invoice_id'] = $invoice_id;
         return view('admin.order.create', $data);
     }
 
     public function edit($order_id)
     {
-        $data['areas'] = DB::table('area')->get();
-        $data['products'] = DB::table('product')->select('product_id', 'sku', 'product_title')->get();
-        $data['order'] = DB::table('orders')->where('id', '=', $order_id)->first();
-        $data['orderTrackInfo'] = DB::table('notifications')->where('order_id', $order_id)->orderBy('id', 'desc')->get();
+      //  $data['areas'] = DB::table('area')->get();
+        $data['products'] = DB::table('products')->get();
+        $data['order'] = Order::where('id', '=', $order_id)->first();
+        $data['stores']= Store::select('id','storeName')->where('status','Active')->get();
+        $data['couriers']= Courier::select('id','courierName')->where('status','Active')->get();
+        $data['orderTrackInfo'] = DB::table('notifications')
+        ->where('order_id', $order_id)->orderBy('id', 'desc')
+        ->get();
         return view('admin.order.edit', $data);
     }
 
     public function update(Request $request, $order_id)
     {
         date_default_timezone_set("Asia/Dhaka");
-        $data['order_status'] = $request->order_status;
-        $order_status = $request->order_status;
-        $data['shipping_charge'] = $request->shipping_charge;
-        //  $data['created_time'] = date("Y-m-d H:i:s");
-        $data['modified_time'] = date("Y-m-d");
-        $data['order_date'] = date("Y-m-d");
-        $data['order_total'] = $request->order_total;
-        $data['area_id'] = $request->area_id;
-        $data['products'] = serialize($request->products);
-        $data['billing_name'] = $request->billing_name;
-        $data['billing_mobile'] = $request->billing_mobile;
-        $data['shipping_address1'] = $request->shipping_address1;
-        $data['courier_service'] = $request->courier_service;
-        $data['shipping_charge'] = $request->shipping_charge;
-        $data['discount_price'] = $request->discount_price;
-        $data['advabced_price'] = $request->advabced_price;
-        $data['order_note'] = $request->order_note;
-        $data['order_area'] = $request->order_area;
-        $data['invoice_id'] = $request->invoice_id;
-        $data['traking_id'] = $request->traking_id;
-        $data['weight'] = $request->weight;
-        if ($request->shipment_time) {
-            $data['shipment_time'] = date('Y-m-d', strtotime($request->shipment_time));
-        }
-        if ($request->return_date) {
-            $data['return_date'] = date('Y-m-d', strtotime($request->return_date));
-        }
+        
+       $order= Order::find($order_id);
+       $order->update($request->all()); 
+        $customer=  Customer::where('order_id',$order_id)->first();
+        $customer->update($request->all());
 
-        if ($request->order_status == 'on_courier') {
-            //   order_date
-            $existingOrderID = DB::table('product_order_report')->where('order_id', '=', $order_id)->value('order_id');
-            if ($existingOrderID) {
-            } else {
-                $order_items = unserialize($data['products']);
-                if (is_array($order_items['items'])) {
-                    foreach ($order_items['items'] as $product_id => $item) {
-                        $sku = DB::table('product')->where('product_id', $product_id)->value('sku');
-                        $newArray[] = array(
-                            'order_id' => $order_id,
-                            'product_id' => $product_id,
-                            'product_code' => $sku,
-                            'order_date' => $data['order_date']
-                        );
-                    }
-                    DB::table('product_order_report')->insert($newArray);
+        $product_ids= $request->product_id;
+        $productCode= $request->productCode; 
+        $productName= $request->productName;
+        $productPrice= $request->productPrice;
+        $quantity= $request->quantity;
 
-                }
-            }
+        OrderProduct::where('order_id',$order_id)->delete();
 
-        }
-        $result = DB::table('order')->where('order_id', '=', $order_id)->update($data);
+        foreach($product_ids as $key=>$product_id){
+            $newArray=array([
+                'product_id'=>$product_ids[$key],
+                'productCode'=>$productCode[$key], 
+                'productName'=>$productName[$key],
+                'productPrice'=>$productPrice[$key],
+                'quantity'=>$quantity[$key],
+                'order_id'=>$order_id,
+            ]);
+            OrderProduct::insert($newArray);
+        }   
 
-        /// order edit track
-        $order_track['status'] = $order_status;
-        $order_track['user_id'] = Auth::user()->id;
-        $order_track['order_id'] = $order_id;
-        $order_track['updated_date'] = date('Y-m-d H:i:s');
-        $order_track['user_name'] = Session::get('name');
-        $order_track['order_note'] = $request->order_note;
-        DB::table('order_edit_track')->insert($order_track);
+        $result = 1;
+
+     
         if ($result) {
-            return back()->with('success', 'Updated successfully.');
+            return redirect('admin/order')->with('success', 'Updated successfully.');
         } else {
-            return back()->with('error', 'Error to Update this order');
+            return redirect('/admin/order')->with('error', 'Error to Update this order');
         }
 
     }
 
     public function order_status()
     {
-
         return view('admin.order.order_status');
     }
 
     public function store(Request $request)
     {
+        if(empty($request->product_id)){
+            return redirect('admin/order/create')->with('error', 'Please Select Product');
+        }
         date_default_timezone_set("Asia/Dhaka");
-        $data['order_status'] = $request->order_status;
-        $order_status = $request->order_status;
-        $data['shipping_charge'] = $request->shipping_charge;
-        $data['created_time'] = date("Y-m-d H:i:s");
-        $data['created_by'] = Session::get('name');
-        $data['modified_time'] = date("Y-m-d");
-        $data['order_date'] = date("Y-m-d");
-        $data['order_total'] = $request->order_total;
-        $data['products'] = serialize($request->products);
-        $data['billing_name'] = $request->billing_name;
-        $data['billing_mobile'] = $request->billing_mobile;
-        $data['shipping_address1'] = $request->shipping_address1;
-        $data['courier_service'] = $request->courier_service;
-        $data['invoice_id'] = $request->invoice_id;
-        $data['weight'] = $request->weight;
-        $data['staff_id'] = Auth::user()->id;
-        $data['shipping_charge'] = $request->shipping_charge;
-        $data['discount_price'] = $request->discount_price;
-        $data['advabced_price'] = $request->advabced_price;
-        $data['order_note'] = $request->order_note;
-        $data['order_area'] = $request->order_area;
-        $data['area_id'] = $request->area_id;
+        $order= Order::create($request->all()); 
+        $order->invoiceId= "BB-".$order->id;
+        $order->save();
+        $order_id=$order->id;
 
-        if ($request->shipment_time) {
+        $customer=  Customer::create($request->all());
+        $customer->order_id=$order_id;
+        $customer->save();
 
-            $data['shipment_time'] = date('Y-m-d H:i:s', strtotime($request->shipment_time));
-        }
-        $orderID = DB::table('order')->insertGetId($data);
+        $product_ids= $request->product_id;
+        $productCode= $request->productCode; 
+        $productName= $request->productName;
+        $productPrice= $request->productPrice;
+        $quantity= $request->quantity;
 
-        if ($request->order_status == 'on_courier') {
+ 
+        foreach($product_ids as $key=>$product_id){
+            $newArray=array([
+                'product_id'=>$product_ids[$key],
+                'productCode'=>$productCode[$key], 
+                'productName'=>$productName[$key],
+                'productPrice'=>$productPrice[$key],
+                'quantity'=>$quantity[$key],
+                'order_id'=>$order_id,
+            ]);
+            OrderProduct::insert($newArray);
+        }   
 
-
-            $order_items = unserialize($data['products']);
-            if (is_array($order_items['items'])) {
-                foreach ($order_items['items'] as $product_id => $item) {
-                    $sku = DB::table('product')->where('product_id', $product_id)->value('sku');
-                    $newArray[] = array(
-                        'order_id' => $orderID,
-                        'product_id' => $product_id,
-                        'product_code' => $sku,
-                        'order_date' => $data['order_date']
-                    );
-                }
-                DB::table('product_order_report')->insert($newArray);
-            }
-
-        }
-
+        
         /// order edit track
-        $order_track['status'] = $order_status;
+        $order_track['status'] = 1;
         $order_track['user_id'] = Auth::user()->id;
-        $order_track['order_id'] = $orderID;
-        $order_track['updated_date'] = date('Y-m-d H:i:s');
-        $order_track['user_name'] = Session::get('name');
-        $order_track['order_note'] = $request->order_note;
-        DB::table('order_edit_track')->insert($order_track);
+        $order_track['order_id'] = $order_id;
+        $order_track['created_at'] = date('Y-m-d H:i:s');
+        $order_track['updated_at'] = date('Y-m-d H:i:s'); 
+        $order_track['notificaton'] = $request->invoiceId ."has been created by ".Auth::user()->name;
 
-        if ($orderID) {
-            return redirect('admin/order')->with('success', "Order ID $orderID Created successfully.");
+         DB::table('notifications')->insert($order_track);
+        if ($order_id) {
+            return redirect('admin/order')->with('success', "Invoice ID BB-$order_id Created successfully.");
         } else {
             return redirect('admin/order')->with('error', 'Error to Create this order');
         }
@@ -283,8 +321,61 @@ class OrderController extends Controller
     {        
 
       $order=  Order::find($request->order_id);
-      $order->status=$request->order_status;
-      $order->save();
+     // $order->status=$request->order_status;
+      $status = $request->order_status;
+   
+
+      if ($status == 'Completed') {
+          $order->orderDate = date('Y-m-d');
+          $order->status = "Pending Invoiced";
+      }
+       if ($status == 'Delivered') {
+          $order->deliveryDate = date('Y-m-d');
+          $orderProducts = OrderProduct::query()->where('order_id', '=', $order->id)->get();
+          foreach ($orderProducts as $orderProduct) {
+              $stock = Stock::query()->where('product_id', '=', $orderProduct->product_id)->first();
+              $stock->stock = $stock->stock - $orderProduct->quantity;
+              $stock->save();
+          }
+      }
+       if ($status == 'Paid') {
+          $order->completeDate = date('Y-m-d');
+      }
+       if ($status == 'Return') {
+          $order->completeDate = date('Y-m-d');
+          $orderProducts = OrderProduct::query()->where('order_id', '=', $order->id)->get();
+          foreach ($orderProducts as $orderProduct) {
+              $stock = Stock::query()->where('product_id', '=', $orderProduct->product_id)->first();
+              $stock->stock = $stock->stock + $orderProduct->quantity;
+              $stock->save();
+          }
+      }
+       if ($order->courier_id || $status == 'Canceled' || $status == 'On Hold' || $status == 'Payment Pending') {
+         
+        if ($status == 'Completed') { 
+            $order->status = "Pending Invoiced";
+        }else{
+        $order->status = $status;
+        }
+          $result = $order->save();
+          if ($result) {
+              $response['status'] = 'success';
+              $response['message'] = 'Successfully Update Status to ' . $status;
+              $notification = new Notification();
+              $notification->order_id = $request->order_id;
+              $notification->notificaton = Auth::user()->name . ' Successfully Update #BB-' . $request->order_id . ' Order status to ' . $status;
+              $notification->user_id = Auth::id();
+              $notification->save();
+          } else {
+              $response['status'] = 'failed';
+              $response['message'] = 'Unsuccessful to update Status ' . $status;
+          }
+      }else {
+        $response['status'] = 'failed';
+        $response['message'] = 'Please Update order courier and try again !';
+    }  
+
+    return json_encode($response);
         
     }
 
@@ -427,32 +518,9 @@ class OrderController extends Controller
 
     public function single_order_invoice($orderID)
     {
-        $data['products'] = DB::table('order')->where('order_id', '=', $orderID)->value('products');
-        $order_items = unserialize($data['products']);
-        if (is_array($order_items['items'])) {
-            foreach ($order_items['items'] as $product_id => $item) {
-                $existingOrderID = DB::table('product_order_report')->where('order_id', '=', $orderID)->value('order_id');
-                if ($existingOrderID) {
-                } else {
-                    $sku = DB::table('product')->where('product_id', $product_id)->value('sku');
-                    $newArray[] = array(
-                        'order_id' => $orderID,
-                        'product_id' => $product_id,
-                        'product_code' => $sku,
-                        'order_date' => date("Y-m-d")
-                    );
-                    DB::table('product_order_report')->insert($newArray);
-                }
-
-
-            }
-
-        }
-        $name = Session::get('name');
-        $row_data['order_status'] = 'invoice';
-        $row_data['order_print_status'] = 1;
-        DB::table('order')->where('order_id', '=', $orderID)->update($row_data);
-        return redirect("https://dhakabaazar.com/order/single_order_invoice/{$orderID}?name={$name}");
+        
+        $invoice = Invoice::find($id);
+        return view('admin.order.print', compact('invoice'));
 
     }
 
@@ -707,7 +775,6 @@ class OrderController extends Controller
 
 
     public function getSinglePercel(Request $request){
-
 $row_data=array();
         $row_data['name']='';
         if($request->all()) {
@@ -747,8 +814,102 @@ $row_data=array();
             $row_data['total_count']=$total_count;
             $row_data['name']=$request->parcel;
         }
-
-
          return view('admin.order.getSinglePercel',$row_data);
     }
+    public function invoiceList(Request $request){
+       
+        if($request->id){
+            $invoice = Invoice::find($request->id);
+            return view('admin.order.print', compact('invoice'));
+        }
+       $data['invoices']= Invoice::orderBy('id','desc')->paginate(10);
+     
+        return view('admin.order.invoiceList',$data);
+    }
+    public function getAllOrderTrackHistory(Request $request)
+    {
+      return  DB::table('notifications')->where('order_id',$request->order_id)->orderBy('id','desc')->get();
+    }
+    public function storeOrderEditHistory(Request $request)
+    {
+        $data['order_id']=$request->order_id;
+        $data['notificaton']=$request->order_note;
+        $data['user_id']=Auth::user()->id;
+        $data['status']=1;
+        $data['created_at']=date("Y-m-d H:i:s");
+        $data['updated_at']=date("Y-m-d H:i:s");
+        DB::table('notifications')->insert($data); 
+     }
+     public function getAllProductsForOrder()
+     {
+         $products =  DB::table('products')->select('id', 'productCode', 'productName')->get();
+         return response()->json($products);
+     }
+
+     public function getOrderMeta(Request $request)
+     {        
+         $product= DB::table('products')->where('id',$request->product_id)->first();
+         $product_image=env('IMG_URL').$product->productImage;
+         $price=$product->productRegularPrice;
+         if($product->productSalePrice > 0){
+             $price =$product->productSalePrice;
+         }
+         echo '<tr>
+             <td>
+             <img  width="60" src="'.$product_image.'" />
+             <br/>
+             '.$product->productName.'
+              <input type="hidden" name="product_id[]" value="'.$product->id.'" />
+             <input type="hidden" name="productCode[]" value="'.$product->productCode.'" />
+             <input type="hidden" name="productName[]" value="'.$product->productName.'" />
+             <input type="hidden" name="productPrice[]" value="'.$price.'" />   
+             </td>
+          
+                 <td>'.$product->productCode.'</td>
+                  <td><input type="number" id="'.$product->id.'" min="1" name="quantity[]" class="form-control quantity" value="1"> </td>
+                    <td class="price text-right" id="price_'.$product->id.'">'.$price.'</td>
+                    <td class="price text-right sub_total_product" id="sub_total_product_'.$product->id.'">'.$price.'</td>
+                      <td><button type="button"   class="btn btn-danger btn-sm delete-product">
+                         <i class="fa fa-trash"></i>
+                     </button></td></tr>';
+         
+     }
+
+     public function getCityByCourierId(Request $request)
+     {
+          $citis= DB::table('cities')->where('courier_id',$request->courier_id)->get();
+         $html='<select  required name="city_id" class="custom-select rounded-0 select2" id="city_id">
+                                             <option value="">---Please Select Courier----</option>';
+         if(count($citis) > 0) {
+ 
+ 
+             foreach ($citis as $city) {
+                 $html .= '<option value="' . $city->id . '">' . $city->cityName . '</option>';
+             }
+         }else{
+ 
+             $html='<select  required name="city_id" class="custom-select rounded-0 select2" id="city_id">
+                                             <option value="">---There are no City Assing----</option>';
+         }
+ 
+         $html .='</select>';
+         return $html;
+         
+         
+     }
+
+     public function getZoneByCityId(Request $request)
+     {
+         $zones=DB::table('zones')->select('id','zoneName')->where(['city_id'=>$request->city_id,'status'=>'Active'])->get();
+
+         $html='<select name="zone_id" id="zone_id" class="form-control select2">
+              <option value="">---Select Option---</option>';
+         foreach($zones as $zone){
+             $html .='<option value="'.$zone->id.'">'.$zone->zoneName.'</option>';
+         }
+         $html .='</select>';
+         echo $html;
+     }
+ 
+    
 }

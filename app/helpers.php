@@ -23,23 +23,73 @@ function getAllOrderStatusForOrderIndex($order_status=null,$order_id=null){
     $PendingInvoice =$order_status=="Pending Invoiced" ? "selected":"";
     $Invoice =$order_status=="Invoiced" ? "selected":"";
     $Hold =$order_status=="On Hold" ? "selected":"";
-    echo '<select  style="width:120px" name="order_status" id="order_status" class="form-control select2 orderStatusList">
-                <option value="">Select Option</option>
-                <option '.$Processing.' value="Processing" order_id='.$order_id.'>Processing</option>
-                <option '.$PendingPayment.' value="Payment Pending" order_id='.$order_id.'>Payment Pending</option>
-                 <option  '.$Completed.' value="Completed" order_id='.$order_id.'> Completed</option>
-                <option '.$Delivered.' value="Delivered" order_id='.$order_id.'>Delivered</option>
-                <option '.$Canceled.' value="Canceled" order_id='.$order_id.'>Canceled</option>
-                <option '.$PendingInvoice.' value="Pending Invoiced" order_id='.$order_id.'>Pending Invoiced</option>
-                <option '.$Invoice.' value="Invoiced" order_id='.$order_id.'>Invoiced</option>
-                <option '.$Hold.' value="On Hold" order_id='.$order_id.'>On Hold</option>
-            </select>';
+    $StockOut =$order_status=="Stock Out" ? "selected":"";
+    $CustomerOnHold =$order_status=="Customer On Hold" ? "selected":"";
+    $CustomerConfirm =$order_status=="Customer Confirm" ? "selected":"";
+    $RequestReturn =$order_status=="Request to Return" ? "selected":"";
+    $Paid =$order_status=="Paid" ? "selected":"";
+    $Lost =$order_status=="Lost" ? "selected":"";
+    $Return =$order_status=="Return" ? "selected":"";
 
-  
-   
+    $option='';
+
+    $processingOption='<option '.$Processing.' value="Processing" order_id='.$order_id.'>Processing</option>
+    <option '.$PendingPayment.' value="Payment Pending" order_id='.$order_id.'>Payment Pending</option>
+    <option '.$Hold.' value="On Hold" order_id='.$order_id.'>On Hold</option>
+    <option '.$Canceled.' value="Canceled" order_id='.$order_id.'>Canceled</option>
+     <option  '.$Completed.' value="Completed" order_id='.$order_id.'> Completed</option>
+    ';
+    $InvoicedOption='<option '.$PendingInvoice.' value="Pending Invoiced" order_id='.$order_id.'>Pending Invoiced</option>
+    <option '.$Invoice.' value="Invoiced" order_id='.$order_id.'>Invoiced</option>
+    <option '.$StockOut.' value="Stock Out" order_id='.$order_id.'>Stock Out</option>
+    ';
+    $DeliveredOption='<option '.$Delivered.' value="Delivered" order_id='.$order_id.'>Delivered</option>
+    <option '.$CustomerOnHold.' value="Customer On Hold" order_id='.$order_id.'>Customer On Hold</option>
+    <option '.$CustomerConfirm.' value="Customer Confirm" order_id='.$order_id.'>Customer Confirm</option>
+    <option '.$RequestReturn.' value="Request to Return" order_id='.$order_id.'>Request to Return</option>
+    <option '.$Paid.' value="Request to Return" order_id='.$order_id.'>Paid</option>
+    <option '.$Lost.' value="Lost" order_id='.$order_id.'>Lost</option>
+    <option '.$Return.' value="Return" order_id='.$order_id.'>Return</option>
+    ';
+    
+    $style='style="width:120px"';
+    $class='orderStatusList';
+    $field_name='name="order_status" id="order_status"';
+    if($order_status=="Processing" || $order_status=="Payment Pending" || $order_status=="On Hold" ||  $order_status=="Canceled" ||  $order_status=="Completed"){
+        $option= $processingOption;
+       
+    }else if($order_status=="Pending Invoiced" || $order_status=="Invoiced" || $order_status=="Stock Out"){
+        $option= $InvoicedOption;
+       
+    }else if($order_status=="Delivered" || $order_status=="Customer On Hold" ||
+     $order_status=="Customer Confirm" || $order_status=="Request to Return" 
+     || $order_status=="Paid" || $order_status=="Lost" || $order_status=="Return"){
+        $option= $DeliveredOption;
+       
+    }else{
+        $option= $processingOption.$InvoicedOption.$DeliveredOption; 
+        $style='style="width:100%"';
+        $class=''; 
+        $field_name='name="convert_order_status" id="convert_order_status"';
+    }
+
+    echo '<select   '.$style.'  '.$field_name.' class="form-control select2 '.$class.'">
+                <option value="">Select Option</option>
+                '.$option.'                 
+            </select>'; 
 
 }
 
+
+
+function SaveUpdateButton($type=null)
+{
+   $text= $type=='save' ? "Save":"Update";
+   $icon= $type=='save' ? "fa fa-save":"fa fa-edit"; 
+   echo '<div class="card-footer" style="text-align: right">
+         <button type="submit" class="btn btn-success btn-sm"><i class="'.$icon.'"></i>  '.$text.'</button>
+         </div>';  
+}
 
 function orderStatusReport($order_status,$start_date,$ending_date)
 {
@@ -74,7 +124,25 @@ function onlineOrder($start_date,$ending_date)
         ->count();
 
 }
+function FormTextarea($lebel,$name,$required,$value=null,$class=null){
+    $html='<div class="form-group">
+    <label for="'.$name.'">'.$lebel.'</label>
+              <textarea  '.$required.'   class="form-control '.$class.'" name="'.$name.'"  id="'.$name.'" placeholder="'.$lebel.'">'.$value.'</textarea>
+    </div>';
+    echo $html;
+}
+function FormInput($lebel,$name,$required,$value,$type=null,$readonly=null,$class=null){
+    $type==null ? 'text':'number';
+    if($lebel==''){
+        return '';
+    }
+    $html='<div class="form-group '.$class.'">
+         <label for="courierName">'.$lebel.'</label>
+         <input type="'.$type.'" '.$required.' '.$readonly.' name="'.$name.'" value="'.$value.'" class="form-control" id="'.$name.'" placeholder="'.$lebel.'">
+        </div>';
+echo $html;
 
+}
 function TotalOnlineStaffOrderList($start_date,$ending_date)
 {
 

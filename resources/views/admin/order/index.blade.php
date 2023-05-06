@@ -18,19 +18,32 @@
     <section class="content">
         <div class='container-fluid'> 
         <div class="row" style="cursor: pointer;">
+        <div class="col-md-12 col-lg-12"> 
             <span id="order_status_view"></span>
             <div class="card mt-1">
                 <div class="card-header">
                     <div class="row">
                         <div class="col-md-2">
-                          <h5>Total <span id="total_count">{{$orders->total()}}</span> Orders </h5>
+                          <h5>Total <span style="color: red;font-size: 18px;font-weight: bold;padding: 2px;" id="total_count">{{$orders->total()}}</span> Orders </h5>
                         </div>
-                        <div class="col-12 col-md-1">                    
-                                <a href="{{url('/')}}/admin/order/create" class="btn btn-success btn-sm"
-                                   style="float:right"> <i class="fa fa-plus-circle"></i></a>
+                        <div class='col-md-2'>
+                        <label  style="display: flex;justify-content: center;flex-direction: row;margin-top: 7px;">Show 
+                            <select style="height: 32px;width: 56px;" name="per_page"  id="per_page"  class="form-control">
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                            </select>
+                         entries</label>
+                        </div>
+                        <div class="col-12 col-md-3">                    
+                                <button  onclick="invoicePrint()" id="invoice_print_id" class="btn btn-warning btn-sm"
+                                    > <i class="fa fa-print"></i> Invoice Print</button>
+                                   
                             @if(Auth::user()->role_id !=3)
                                 <button type="button" data-toggle="modal" data-target="#modal-default"
-                                        class="btn btn-danger btn-sm" style="float:right" id="order_exchange_id"><i
+                                        class="btn btn-danger btn-sm"  id="order_exchange_id"><i
                                             class="fas fa-exchange"></i>
                                 </button>
                             @endif
@@ -42,67 +55,82 @@
                         
 
                     </div>
-                    <div class='row'>
+                    <div class='row mt-2'>
+                       
+                     
                         <div class='col-md-2'>
-                        <label  style="display: flex;justify-content: center;flex-direction: row;margin-top: 7px;">Show 
-                            <select name="per_page"  id="per_page"  class="form-control">
-                                <option value="10">10</option>
-                                <option value="25">25</option>
-                                <option value="50">50</option>
-                                <option value="100">100</option>
-                                <option value="500">500</option>
-                            </select>
-                         entries</label>
+                        <input type="text" name="invoice_id" id="invoice_id" placeholder="Invoice"
+                                   class="form-control">
                         </div>
+                        <div class='col-md-2'>
+                        <input type="text" id="customer_phone" placeholder="Phone Number"
+                                   class="form-control">
+                        </div>
+                        <div class='col-md-3'>
+                        <select style="width:100%"   name="courier_id" id="courier_id" class="form-control ">
+                                            <option value="">Select Option</option>
+                                            @foreach($courierInfo as $courierRow)
+                                                <option value="{{$courierRow->id}}">{{$courierRow->courierName}}</option>
+                                            @endforeach 
+                                </select>
+                        </div>
+                        <div class='col-md-2'>
+                        <input type="date" id="order_date" name="order_date" class='form-control'>   
+
+                        </div>
+                        <div class='col-md-2'>
+                        <select  style="width:100%" name="user_id" id="user_id" class="form-control">
+                                            <option value="">Select Option</option>
+                                            @foreach($users as $user_row)
+                                                <option value="{{$user_row->id}}">{{$user_row->name}}</option>
+                                            @endforeach 
+                                </select> 
+
+                        </div>
+                        <div class='col-md-1'>
+                        <button  onclick="filterRemove()" type="button" class="btn btn-warning   ml-2  btn-sm">
+                            <i class="fas fa-filter"></i>
+                                                 </button> 
+                        </div>
+
+
                     </div>
                 </div>
                 <div class="card-body p-0 table-responsive">
                     <table class="table table-bordered " style="width:100%">
                         <thead>
                         <tr style="text-align:center">
-                        <th>SL 
+                        <th> 
 
                         @if(Auth::user()->role_id !=3)
                                     <input type="checkbox"  style="width: 29px;height: 25px;" name="all_select" id="checkAll"/>
-                                @endif
+                      @else 
+                      SL
+                    @endif
                         </th>
                             <th class='text-center'>
-                            <input type="text" name="invoice_id" id="invoice_id" placeholder="Invoice"
-                                   class="form-control">
+                           Invoice ID
                          
                             </th>
                             <th style="width:15%;text-align:left">
-                            <input type="text" id="customer_phone" placeholder="Phone Number"
-                                   class="form-control">
+                           Customers
                             </th> 
                             <th>Products</th>
                             <th>Total</th>
                             <th>
-                                <select style="width:100%"   name="courier_id" id="courier_id" class="form-control select2">
-                                            <option value="">Select Option</option>
-                                            @foreach($courierInfo as $courierRow)
-                                                <option value="{{$courierRow->id}}">{{$courierRow->courierName}}</option>
-                                            @endforeach 
-                                </select>
+                              Courier
                               </th> 
                               <th>
-                               <input type="date" id="order_date" name="order_date" class='form-control'>   
+                                Order Date
                               </th>
                               <th  style="width:250px" >
                                  Status
-                              </th>
-                              
-                             <th>
-                            <select  style="width:100%" name="user_id" id="user_id" class="form-control select2">
-                                            <option value="">Select Option</option>
-                                            @foreach($users as $user_row)
-                                                <option value="{{$user_row->id}}">{{$user_row->name}}</option>
-                                            @endforeach 
-                                </select>
-                              
-                            </th>
-                             
-                            <th width="10%">Action </th>
+                              </th>                              
+                             <th>                           
+                             Staff                              
+                            </th>                             
+                            <th width="10%">                              
+                            Action </th>
 
                         </tr>
                         </thead>
@@ -113,6 +141,7 @@
                 </div>
                 <!-- /.card-body -->
             </div>
+        </div>
         </div>
         </div>
         <!-- /.card -->
@@ -132,38 +161,20 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class='form-group'>
-                        
-                   
-                    <label>Exchange to</label>
-                    <select name="staff_id" id="staff_id" class="form-control">
-                        <option value="">Select Option</option>
-                        @foreach($users as $user)
-                            <option value="{{$user->id}}">{{$user->name}}</option>
-                        @endforeach 
-                    </select>
-
-                   
-                     </div>
+                    <div class='form-group'>  
+                      <label>Exchange to</label>
+                        <select name="staff_id" id="staff_id" class="form-control">
+                            <option value="">Select Option</option>
+                            @foreach($users as $user)
+                                <option value="{{$user->id}}">{{$user->name}}</option>
+                            @endforeach 
+                        </select> 
+                     </div> 
+                     <div class='form-group'>  
+                      <label>Order Status</label>
+                        {{getAllOrderStatusForOrderIndex("all",2)}}
+                     </div> 
                      
-                       <div class='form-group'>
-                        
-                   
-                    <label>Order Status</label>
-                    <select style="width:100%" name="order_status_convert" id="order_status_convert" class="form-control select2">
-                        <option value="">Select Option</option>
-                        <option value="new">New</option>
-                                        <option value="pending_payment">Pending for Payment</option>
-                                        <option value="pending">Pending</option>
-                                        <option value="on_courier"> Courier</option>
-                                        <option value="delivered">Delivered</option>
-                                        <option value="cancled">Cancelled</option>
-                                        <option value="ready_to_deliver">Pending Invoice</option>
-                                        <option value="invoice">Invoice</option>
-                                        <option value="booking">Booking</option>
-                    </select>
-                     </div>
-
 
                 </div>
                 <div class="modal-footer text-right">
@@ -202,6 +213,46 @@
     <input type="hidden" name="hidden_page" id="hidden_page" value="1"/>
     <input type="hidden" name="status" id="status" value="new"/> 
     <script>
+     $("#invoice_print_id").hide();  
+     
+     $("#invoice_print_id").click(function () { 
+            var order_id_print = new Array(); 
+            
+            $('.checkAll').each(function () {
+                if ($(this).is(":checked")) {
+                    order_id_print.push(this.value);
+                }
+            }); 
+            let order_id = [...new Set(order_id_print)]; 
+            if (order_id.length > 0) {
+                $.ajax({
+                    url: '{{url('/')}}/admin/storeInvoice',
+                    data: {
+                        order_id: order_id, 
+                        "_token": "{{csrf_token()}}"
+                    },
+                    type: 'post',
+                    success: function (data) {
+                        let row_data=JSON.parse(data); 
+                        if(row_data.status=="success"){
+
+                            window.location.href=row_data.link;
+                        } 
+                    }
+                });
+            } else {
+                alert("Please select Order Id")
+            }
+        });
+
+        function filterRemove(){
+            $("#user_id").val("");
+            $("#courier_id").val("");
+            $("#order_date").val("");
+            $("#customer_phone").val("");
+            $("#invoice_id").val("");
+            fetch_data(1)  
+        }
 
         window.load = order_status() 
         function orderEdit(order_id) {
@@ -217,24 +268,26 @@
 
         $("#exchange_now").click(function () {
             var staff_id = $("#staff_id").val();
-            var order_status_convert = $("#order_status_convert").val();
-            if (staff_id == '') {
-                alert("Please Select at least One Staff")
-                return false;
-            }
+            var order_status = $("#convert_order_status").val();
+            // if (staff_id == '') {
+            //     alert("Please Select at least One Staff")
+            //     return false;
+            // }
             var order_id = new Array(); 
             $('.checkAll').each(function () {
                 if ($(this).is(":checked")) {
                     order_id.push(this.value);
                 }
             });
+            
+         
             if (order_id.length > 0) {
                 $.ajax({
 
                     url: '{{url('/')}}/admin/orderExchange',
                     data: {
                         order_id: order_id,
-                        order_status:order_status_convert,
+                      order_status:order_status,
                         staff_id: $("#staff_id").val(),
                         "_token": "{{csrf_token()}}"
                     },
@@ -292,8 +345,15 @@
                      order_status:order_status_value
                    },
                    success:function(data){
-                       $("#order_id_"+order_id).remove();
+                    let row_data=JSON.parse(data);  
+                     if(row_data.status=="success"){
+                        $("#order_id_"+order_id).remove();
                        order_status()
+                        toastr.success(row_data.message)
+                     }else if(row_data.status=="failed"){
+                        toastr.error(row_data.message) 
+                     }
+                     
                    }
                })
             }
@@ -344,6 +404,11 @@
         function orderStatus(status) {
             $('#status').val(status);
             let page = 1;
+            if(status=="Pending Invoiced"){
+                $("#invoice_print_id").show();
+            }else{
+                $("#invoice_print_id").hide();   
+            }
             fetch_data(page);
         } 
        
@@ -351,14 +416,12 @@
             fetch_data(1); 
         });
 
-
         $(document).on('click', '.pagination a', function (event) {
             event.preventDefault();
             var page = $(this).attr('href').split('page=')[1];
             $('#hidden_page').val(page);          
             fetch_data(page);
         });
-
 
         $(document).on('click', '.status_check', function () {
             var status = $(this).val()

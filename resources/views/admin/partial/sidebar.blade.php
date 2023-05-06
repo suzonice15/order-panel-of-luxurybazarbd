@@ -14,7 +14,7 @@ $status=Session::get("status");
             <img src="https://cdn.pixabay.com/photo/2015/03/04/22/35/head-659651_960_720.png" class="img-circle elevation-2" alt="User Image">
         </div>
         <div class="info">
-            <a href="#" class="d-block">Software</a>
+            <a href="#" class="d-block">{{Auth::user()->name}}</a>
         </div>
     </div>
 
@@ -23,7 +23,7 @@ $status=Session::get("status");
        
     <li class="nav-item">
             <a href="{{url('/')}}/admin/dashboard" class="nav-link">
-            <i class="nav-icon  fas fa-tachometer-alt"></i>                
+            <i class="nav-icon  fas fa-home"></i>                
                 <p>               Dashboard
                 </p>
             </a>
@@ -42,7 +42,7 @@ $status=Session::get("status");
             <li class="nav-item">
                     <a href="{{url('/')}}/admin/order/create" class="nav-link">
                     <i class="fas fa-arrow-circle-right nav-icon"></i>
-                        <p>Add New Order</p>
+                        <p>Add New </p>
                     </a>
                 </li>    
                 <li class="nav-item">
@@ -50,18 +50,24 @@ $status=Session::get("status");
                     <i class="fas fa-arrow-circle-right nav-icon"></i>
                         <p>Orders List</p>
                     </a>
+                </li>    
+                <li class="nav-item">
+                    <a href="{{url('/')}}/admin/order/invoiceList" class="nav-link">
+                    <i class="fas fa-arrow-circle-right nav-icon"></i>
+                        <p>Invoice List</p>
+                    </a>
                 </li>     
 				
-				 <li class="nav-item">
+				 <!-- <li class="nav-item">
                     <a href="{{url('/')}}/admin/orderStatus/report" class="nav-link">
                         <i class="fas fa-arrow-circle-right nav-icon"></i>
                         <p>Order Status Report </p>
                     </a>
-                </li>
+                </li> -->
 
 				
                 @if(Auth::user()->role_id !=3)
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a href="{{url('/')}}/admin/product/report" class="nav-link">
                     <i class="fas fa-arrow-circle-right nav-icon"></i>
                         <p>Product report </p>
@@ -74,7 +80,7 @@ $status=Session::get("status");
                             <i class="fas fa-arrow-circle-right nav-icon"></i>
                             <p>Current Month Staff Report </p>
                         </a>
-                    </li>
+                    </li> -->
 
                     @endif
 
