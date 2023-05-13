@@ -99,16 +99,23 @@ $status=Session::get("status");
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
-            <ul class="nav nav-treeview">
-
-
+            <ul class="nav nav-treeview"> 
 
                 <li class="nav-item">
-                    <a href="{{url('/')}}/admin/order/sendProductToRedex" class="nav-link">
+                    <a href="{{url('/')}}/admin/productBookingToRedex" class="nav-link">
                         <i class="fas fa-arrow-circle-right nav-icon"></i>
                         <p>Order Send To Redex </p>
                     </a>
                 </li>
+
+                
+                <li class="nav-item">
+                    <a href="{{url('/')}}/admin/productBookingToSteadFast" class="nav-link">
+                        <i class="fas fa-arrow-circle-right nav-icon"></i>
+                        <p>Order Send To SteadFast </p>
+                    </a>
+                </li>
+
                 <li class="nav-item">
                     <a  href="{{url('/')}}/admin/order/getSinglePercel" class="nav-link">
                         <i class="fas fa-arrow-circle-right nav-icon"></i>

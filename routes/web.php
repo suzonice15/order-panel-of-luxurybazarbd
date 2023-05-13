@@ -6,6 +6,7 @@ use App\Http\Controllers\admin\DashboardController;
  use App\Http\Controllers\admin\CategoryController;
 use App\Http\Controllers\admin\OrderController;
 use App\Http\Controllers\admin\SettingController;
+use App\Http\Controllers\admin\ProductBookingController;
 
 
 Route::group(['prefix'=>'admin',
@@ -36,8 +37,6 @@ Route::group(['prefix'=>'admin',
     Route::post('/storeInvoice', [OrderController::class, 'storeInvoice']);
     Route::get('/currentMonthStaffReport', [OrderController::class, 'currentMonthStaffReport']);
     Route::get('/order/getTotalProductsReport', [OrderController::class, 'getTotalProductsReport']);
-    Route::get('/order/sendProductToRedex', [OrderController::class, 'sendProductToRedex']);
-    Route::post('/sendProductCourier', [OrderController::class, 'sendProductCourier']);
     Route::get('getAllOrderTrackHistory', [OrderController::class, 'getAllOrderTrackHistory']);   
     Route::get('storeOrderEditHistory', [OrderController::class, 'storeOrderEditHistory']);   
     Route::get('getAllProductsForOrder', [OrderController::class, 'getAllProductsForOrder']);   
@@ -49,11 +48,22 @@ Route::group(['prefix'=>'admin',
     Route::get('/order/pagination', [OrderController::class, 'pagination']); 
      Route::get('/order/searchOrderOfRedexCourier', [OrderController::class, 'searchOrderOfRedexCourier']);  
      Route::get('/order/orderUpdateByOrderStatus', [OrderController::class, 'orderUpdateByOrderStatus']);  
-    Route::get('/order/getSinglePercel', [OrderController::class, 'getSinglePercel']);  
+    Route::get('/order/getSinglePercel', [OrderController::class, 'getSinglePercel']); 
+    
+//    start  product booking route 
+Route::get('/productBookingToRedex', [ProductBookingController::class, 'productBookingToRedex']);
+Route::post('/productBookingToRedex', [ProductBookingController::class, 'sendProductToRedex']);
+
+Route::get('/productBookingToSteadFast', [ProductBookingController::class, 'productBookingToSteadFast']);
+Route::post('/productBookingToSteadFast', [ProductBookingController::class, 'sendProductToSteaddFast']);
+
+
+//    end    product booking route
 
     
     Route::get('/setting', [SettingController::class,'setting']);  
     Route::post('/setting', [SettingController::class,'setting']);
+    Route::get('excelExport', [OrderController::class,'excelExport']);
     Route::resource('order', OrderController::class);
 
      

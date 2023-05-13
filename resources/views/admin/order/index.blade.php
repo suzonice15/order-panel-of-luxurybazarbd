@@ -23,8 +23,8 @@
             <div class="card mt-1">
                 <div class="card-header">
                     <div class="row">
-                        <div class="col-md-2">
-                          <h5>Total <span style="color: red;font-size: 18px;font-weight: bold;padding: 2px;" id="total_count">{{$orders->total()}}</span> Orders </h5>
+                        <div class="col-md-4">
+                          <h5>Total <span id="status_set" style="color:green;font-weight:bold">Processing</span><span style="color: red;font-size: 18px;font-weight: bold;padding: 2px;" id="total_count">{{$orders->total()}}</span> Orders </h5>
                         </div>
                         <div class='col-md-2'>
                         <label  style="display: flex;justify-content: center;flex-direction: row;margin-top: 7px;">Show 
@@ -37,9 +37,12 @@
                             </select>
                          entries</label>
                         </div>
-                        <div class="col-12 col-md-3">                    
+                        <div class="col-12 col-md-4">                    
                                 <button  onclick="invoicePrint()" id="invoice_print_id" class="btn btn-warning btn-sm"
                                     > <i class="fa fa-print"></i> Invoice Print</button>
+
+                                    <button  onclick="exportData()"   class="btn btn-info btn-sm"
+                                    > <i class="fas fa-file-excel"></i> Export To Excel</button>
                                    
                             @if(Auth::user()->role_id !=3)
                                 <button type="button" data-toggle="modal" data-target="#modal-default"
@@ -211,7 +214,7 @@
         <!-- /.modal-dialog -->
     </div> 
     <input type="hidden" name="hidden_page" id="hidden_page" value="1"/>
-    <input type="hidden" name="status" id="status" value="new"/> 
+    <input type="hidden" name="status" id="status" value="Processing"/> 
     <script>
      $("#invoice_print_id").hide();  
      
@@ -245,6 +248,25 @@
             }
         });
 
+        function exportData(){
+ 
+            var order_id_export = new Array(); 
+            
+            $('.checkAll').each(function () {
+                if ($(this).is(":checked")) {
+                    order_id_export.push(this.value);
+                }
+            }); 
+            let order_id = [...new Set(order_id_export)]; 
+            if (order_id.length > 0) {
+                window.open('{{url('/')}}/admin/excelExport?order_id='+order_id);
+               
+            } else {
+                alert("Please select Order Id")
+            }
+       
+
+        }
         function filterRemove(){
             $("#user_id").val("");
             $("#courier_id").val("");
@@ -403,6 +425,7 @@
         }
         function orderStatus(status) {
             $('#status').val(status);
+            $('#status_set').text(status);
             let page = 1;
             if(status=="Pending Invoiced"){
                 $("#invoice_print_id").show();

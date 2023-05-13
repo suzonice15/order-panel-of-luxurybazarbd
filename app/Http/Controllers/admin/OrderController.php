@@ -15,6 +15,8 @@ use App\Models\Courier;
 use App\Models\Customer;
 use App\Models\Notification;
  use App\Models\OrderProduct;
+ use Excel;
+ use App\Exports\OrderExport;
 
 class OrderController extends Controller
 {
@@ -59,7 +61,7 @@ class OrderController extends Controller
                     if($request->order_status){
                         $status= $request->order_status;
                    // $data['status'] = $request->order_status;
-                   $order =   DB::table('orders')->where('id', '=', $order_id)->first();
+                   $order =  Order::where('id', '=', $order_id)->first();
                     if ($status == 'Completed') {
                         $data['orderDate'] = date('Y-m-d');
                         $data['status'] = "Pending Invoiced";
@@ -92,7 +94,7 @@ class OrderController extends Controller
                       }else{
                       $data['status'] = $status;
                       }
-                        $result =   DB::table('orders')->where('id', '=', $order_id)->update($data);
+                        $result =  Order::where('id', '=', $order_id)->update($data);
                         if ($result) {
                             $response['status'] = 'success';
                             $response['message'] = 'Successfully Update Status to ' . $status;
@@ -173,7 +175,7 @@ class OrderController extends Controller
 
             if($customer_phone){
                 $orderIds=DB::table('customers')
-                ->where('customerPhone',$customer_phone)
+                ->where('customerPhone','like', '%' .$customer_phone . '%')
                 ->pluck('order_id')
                 ->toArray();
                 $query->whereIn('id', $orderIds);
@@ -183,7 +185,7 @@ class OrderController extends Controller
                 $query->where('courier_id', $courier_id);
             } 
             if($invoice_id){
-                $query->where('invoiceId', $invoice_id);
+                $query->where('invoiceId', 'like', '%' .$invoice_id . '%');
             }       
         $orders =$query->orderBy('updated_at', 'desc')->paginate($per_page);  
 
@@ -623,47 +625,7 @@ class OrderController extends Controller
         return view('admin.order.order_loop', $data);
     }
 
-    public function sendProductToRedex(Request $request)
-    {
-        $start_date=date("d-m-Y");
-        $end_date=date("d-m-Y");
-        if($request->filter=='filter'){
-            $start_date=date("Y-m-d",strtotime($request->starting_date));
-            $end_date=date("Y-m-d",strtotime($request->end_date));
-            $data['orders'] = DB::table('orders')
-                ->where('courier_id', 'Redx')
-                ->where('status', 'invoice')
-                ->where('orderDate', '>=', $start_date)
-                ->where('orderDate', '<=', $end_date)
-                ->orderBy('id', 'desc')
-                ->get();
-
-        } else if($request->booking=='booking')   {
-            $start_date=date("Y-m-d",strtotime($request->starting_date));
-            $end_date=date("Y-m-d",strtotime($request->end_date));
-
-            $data['orders'] = DB::table('orders')
-                ->where('courier_id', 'Redx')
-                ->where('status', 'booking')
-                ->where('courier_booking_date', '>=', $start_date)
-                ->where('courier_booking_date', '<=', $end_date)
-                ->orderBy('id', 'desc')
-                ->get();
-
-        } else{
-
-            $data['orders'] = DB::table('orders')
-                ->where('courier_id', 'Redx')
-                ->whereNull('order_tracking_id')
-                ->where('status', 'Invoiced')
-                ->orderBy('id', 'desc')
-                ->get();
-        }
-        $data['start_date']= $start_date;
-        $data['end_date']= $end_date;
- 
-        return view('admin.order.sendCourier', $data);
-    }
+   
 
     public function searchOrderOfRedexCourier(Request $request)
     {
@@ -678,100 +640,6 @@ class OrderController extends Controller
     }
 
 
-    public function sendProductCourier(Request $request)
-    {
-        $failed_to_insert='Failed following order to insert in redex: ';
-         $error_count=0;
-        $count = count($request->order_id);
-        if ($count > 0) {
-            foreach ($request->order_id as $order_id) {
-                $order = DB::table('order')->where('id', $order_id)->first();
-                if ($order->weight > 0 && $order->area_id > 0) {
-
-                    $name = $order->billing_name;
-                    $phone = $order->billing_mobile;
-                    $address = trim($order->shipping_address1);
-                    $cash_collection = str_replace(',', '', $order->order_total);
-                    $percel_weight = $order->weight;
-                    $value = 80;
-                    $note = $order->order_note;
-                    $invoice_id = $order->invoice_id;
-                    $areaInfo = DB::table('area')->where('area_id', $order->area_id)->first();
-                    if ($areaInfo) {
-                        $delivery_area = $areaInfo->area_name;
-                        $delivery_area_id = $areaInfo->area_id;
-                    }
-
-                    $tracking = $this->getTrackingId($name, $phone, $address, $cash_collection, $percel_weight, $value, $note, $invoice_id, $delivery_area, $delivery_area_id);
-
-                    $object = json_decode($tracking);
-                    if (isset($object->tracking_id)) {
-                        $data['traking_id'] = $object->tracking_id;
-                        $data['shipment_time'] = date("Y-m-d");
-                        $data['order_status'] = 'booking';
-                        DB::table('order')->where('id', '=', $order_id)->update($data);
-                    } else{
-                        $failed_to_insert .=$order_id.' ,';
-                        ++$error_count;
-                    }
-                }
-            }
-
-        }
-        if($error_count >0){
-          return  $failed_to_insert;
-        }else{
-            return "Successfully Your Selected Order Booking  to redex.com ";
-        }
-
-    }
-
-    public function getTrackingId($name, $phone, $address, $cash_collection, $percel_weight, $value, $note, $invoice_id, $delivery_area, $delivery_area_id)
-    {
-        $curl = curl_init();
-
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://openapi.redx.com.bd/v1.0.0-beta/parcel',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => '{
-    "customer_name":"' . $name . '",
-    "customer_phone":"' . $phone . '",
-    "delivery_area": "' . $delivery_area . '",
-    "delivery_area_id": ' . $delivery_area_id . ',
-    "customer_address":"' . $address . '",
-    "merchant_invoice_id": "' . $invoice_id . '",
-    "cash_collection_amount": "' . $cash_collection . '",
-    "parcel_weight": ' . $percel_weight . ',
-    "instruction": "' . $note . '",
-    "value": 100,
-    "parcel_details_json": [ {
-            "name": "item1",
-            "category": "category1",
-            "value": 120.05
-        },
-        {
-            "name": "item2",
-            "category": "category2",
-            "value": 130.05
-        } ]
-}',
-            CURLOPT_HTTPHEADER => array(
-                'API-ACCESS-TOKEN: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMTAzOCIsImlhdCI6MTY1MzM3Nzk4NiwiaXNzIjoieExQelFrTmZyZjJnb3JkT2s1U1E0NFhTQVdWV0Jqd0MiLCJzaG9wX2lkIjoyMTAzOCwidXNlcl9pZCI6ODE0Mjd9.ppTa6QWyNUj4_N1g48mZ2VsesbhRsEqwfs4ySFxPm5M',
-                'Content-Type: application/json'
-            ),
-        ));
-
-        $response = curl_exec($curl);
-        curl_close($curl);
-        return $response;
-
-    }
 
 
     public function getSinglePercel(Request $request){
@@ -909,6 +777,12 @@ $row_data=array();
          }
          $html .='</select>';
          echo $html;
+     }
+
+     public function excelExport(Request $request){
+        $order_ids=explode(',',$request->order_id);
+ 
+      return  Excel::download(new OrderExport($order_ids),date("d_m_Y").'_order_data.xlsx'); 
      }
  
     

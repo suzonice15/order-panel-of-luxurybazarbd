@@ -1,10 +1,8 @@
 @extends('admin.master')
-@section('main',"Send Products to Courier")
-@section('active',"Send Products to Courier")
-@section('title',"Send Products to Courier")
-
+@section('main',"Redex Booking")
+@section('active',"Redex Booking")
+@section('title',"Redex Booking")
 @section('main-content')
-
     <style>
         .img-responsive {
             float: left;
@@ -18,8 +16,8 @@
         }
     </style>
     <section class="content">
-        <div class="container-fluid" style="background:#fff;margin-bottom: 9px;">
-       <form action="{{url('/')}}/admin/order/sendProductToRedex" method="get" >
+    <div class="container" style="background:#fff;margin-bottom: 9px;">
+       <form action="{{url('/')}}/admin/productBookingToRedex" method="get" >
         <div class="row">
             <div class="col-6 col-lg-3">
                 <div class="form-group"  >
@@ -53,81 +51,89 @@
                 <button type="submit"
                         class="btn btn-success btn-sm" name="booking" value="booking">
                     <i class="fas fa-search"></i> Booking Search
-                </button>
-
-
-            </div>
-            <div class="col-6 col-lg-3" style="margin-top:12px">
-                <br/>
-                <input type="text" name="order_id_search" id="order_id_search" class="form-control" placeholder="Enter Order ID" />
-
-            </div>
-
-
-
+                </button> 
+            </div> 
         </div>
        </form>
         </div>
-        <div class="row">
 
-            <div class="col-12">
-
-                <div class="card">
-                    <div class="card-header">
-                        <span style="color:red;font-weight: bold;font-size:18px" id="count_total"></span>
+        <div class='container-fluid'> 
+        <div class="row" style="cursor: pointer;">
+        <div class="col-md-12 col-lg-12"> 
+         
+            <div class="card mt-1">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-4">
+                          <h5>Total <span id="status_set" style="color:green;font-weight:bold"></span><span style="color: red;font-size: 18px;font-weight: bold;padding: 2px;" id="total_count">{{count($orders)}}</span> Orders </h5>
+                        </div> 
+                        <div class="col-md-8">
                         <button type="button"
-                                class="btn btn-danger btn-sm" style="float:right" id="exchange_send_now">
+                                class="btn btn-danger btn-sm" style="float:right" id="send">
                             <i class="fas fa-arrow-circle-right"></i> Send Product To Courier
                         </button>
+                            </div>
 
                     </div>
-
-                    <!-- /.card-header -->
-                    <div class="card-body table-responsive p-0">
-                        <table class="table table-hover table-bordered">
-                            <thead>
-                            <tr style="text-align:center">
-                                <td>
-                                    All
-                                      <input type="checkbox" name="all_select" id="checkAll"/>
-
-                                </td>
-
-                                <th> Courier Information </th>
-                                <th width="10%">
-                                    Order ID
-                                </th>
-                                <th style="width: 9%;">
-                                    <span style="font-size: 15px;"> Office Staff</span>
-                                    <br/>
-
-                                </th>
-                                <th style="width:20%;text-align:left">Customer</th>
-                                <th style="text-align:left">Products</th>
-                                <th> Amount</th>
-
-
-                            </tr>
-                            </thead>
-                            <tbody>
-                          @include('admin.order.sendCourierComponent')
-                            </tbody>
-                        </table>
-                    </div>
-                    <!-- /.card-body -->
+                    
                 </div>
-                <!-- /.card -->
+                <div class="card-body p-0 table-responsive">
+                    <table class="table table-bordered " style="width:100%">
+                        <thead>
+                        <tr style="text-align:center">
+                        <th> 
+
+                        @if(Auth::user()->role_id !=3)
+                                    <input type="checkbox"  style="width: 29px;height: 25px;" name="all_select" id="checkAll"/>
+                      @else 
+                      SL
+                    @endif
+                        </th>
+                            <th class='text-center'>
+                           Invoice ID
+                         
+                            </th>
+                            <th style="width:15%;text-align:left">
+                           Customers
+                            </th> 
+                            <th>Products</th>
+                            <th>Total</th>
+                            <th>
+                              Courier
+                              </th> 
+                              <th>
+                                Order Date
+                              </th>
+                                                         
+                             <th>                           
+                             Staff                              
+                            </th>                             
+                            <th width="10%">                              
+                            Action </th>
+
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @include('admin.booking.booking_pagination')
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.card-body -->
             </div>
         </div>
+        </div>
+        </div>
+        <!-- /.card -->
 
     </section>
 
-
+  
+   
 
 
     <script>
         
-        $("#exchange_send_now").click(function () {
+        $("#send").click(function () {
 
             var order_id = new Array();
              $('.checkAll').each(function () {
@@ -136,8 +142,8 @@
                 }
             });
             if (order_id.length > 0) {
-                $("#exchange_send_now").prop("disabled",true);
-                $("#exchange_send_now").text("Please Wait.....");
+                $("#send").prop("disabled",true);
+                $("#send").text("Please Wait.....");
                 $.ajax({
                     url: '{{url('/')}}/admin/sendProductCourier',
                     data: {
@@ -146,13 +152,13 @@
                     },
                     method: 'post',
                     success: function (data) {
-                        alert(data)
-                        $("#exchange_send_now").text("Successfully done !");
+                      
+                        $("#send").text("Successfully done !");
                           location.reload();
                     },
                     error:function(data){
-                        $("#exchange_send_now").prop("disabled",false);
-                        $("#exchange_send_now").text("Please Fill Up All Courier Information");
+                        $("#send").prop("disabled",false);
+                        $("#send").text("Please Fill Up All Courier Information");
                     }
                 });
             } else {
@@ -204,24 +210,11 @@
 
 
         })
-
-        $(document).on('keyup input', '#order_id_search', function () {
-            var query = $('#order_id_search').val();
-            if (query.length > 1) {
-
-                    $.ajax({
-                        type: "GET",
-                        url: "{{url('admin/order/searchOrderOfRedexCourier')}}?order_id="+query,
-                        success: function (data) {
-                            $('tbody').html('');
-                            $('tbody').html(data);
-                        }
-                    })
-
-            }
-        });
+ 
 
 
     </script>
+
+
 
 @endsection

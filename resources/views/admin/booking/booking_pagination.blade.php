@@ -1,9 +1,8 @@
- @php $i = $orders->perPage() * ($orders->currentPage() - 1); @endphp
- @foreach($orders as $order) 
+  @foreach($orders as $key=>$order) 
                   <tr id="order_id_{{$order->id}}">
-                    <td style="text-align:center">{{++$i}}
+                    <td style="text-align:center">{{++$key}}
                     <br/>
-                    @if(Auth::user()->role_id !=3)
+                    @if(empty($order->order_tracking_id))
                     <input style="width: 29px;height: 25px;text-align: center;"
                     type="checkbox" value="{{$order->id}}"
                      class="checkAll">
@@ -60,40 +59,21 @@
                      </span>
                     @endif  
                       </td>
-                      <td style="width:250px" > 
-                      {{getAllOrderStatusForOrderIndex("$order->status",$order->id)}} 
-                     
-
                       
-                        </td>
-       <td style="text-align: center">
-         <span   data-toggle="modal" data-target="#modal-edit" 
-                    onclick="orderEdit({{$order->id}})" 
-                    class="badge badge-pill badge-primary"> {{getUserName($order->user_id)}}</span>          
-         
-
+                <td style="text-align: center" > 
+                     {{getUserName($order->user_id)}} 
                </td> 
 
             <td>
                 <a title="edit"   href="{{ url('admin/order') }}/{{ $order->id }}/edit" class=" btn btn-success btn-sm">
                     <i class="fa fa-pencil"></i>
                 </a> 
-                @if(($order->status=='ready_to_deliver') ||  ($order->status=='invoice'))
-
-                <a title="print"  class="btn btn-info btn-sm" target="_blank" href="{{url('/')}}/admin/single_order_invoice/{{ $order->order_id }}?name={{ Session::get('name') }}">
-                      @if($order->order_print_status ==1)
-                        Done
-                      @endif
-                    <i class="fa fa-print "></i>
-                </a>
-                @endif
+               
                 
             </td>
         </tr>
               @endforeach 
-              <tr ><td></td> <td style="text-align: center" colspan="8">  {!! $orders->links() !!}</td><td></td></tr>     
               
-         
          
          
          

@@ -1,12 +1,15 @@
 <?php
 //use Auth;
-function totalOrder($order_status)
+function totalOrder($order_status,$order_date=null)
 {
     $staff_id = Auth::user()->id;
     $status = Auth::user()->role_id;
     $query=DB::table('orders');
     if ($status == 3) {
         $query->where('user_id', '=', $staff_id);
+    }
+    if($order_date){
+        $query->whereDate('orderDate', $order_date); 
     }
     if($order_status !='All'){
       $query->where('status', $order_status);
@@ -42,6 +45,7 @@ function getAllOrderStatusForOrderIndex($order_status=null,$order_id=null){
     $InvoicedOption='<option '.$PendingInvoice.' value="Pending Invoiced" order_id='.$order_id.'>Pending Invoiced</option>
     <option '.$Invoice.' value="Invoiced" order_id='.$order_id.'>Invoiced</option>
     <option '.$StockOut.' value="Stock Out" order_id='.$order_id.'>Stock Out</option>
+    <option '.$Completed.' value="Completed" order_id='.$order_id.'>Completed</option>
     ';
     $DeliveredOption='<option '.$Delivered.' value="Delivered" order_id='.$order_id.'>Delivered</option>
     <option '.$CustomerOnHold.' value="Customer On Hold" order_id='.$order_id.'>Customer On Hold</option>
@@ -54,11 +58,11 @@ function getAllOrderStatusForOrderIndex($order_status=null,$order_id=null){
     
     $style='style="width:120px"';
     $class='orderStatusList';
-    $field_name='name="order_status" id="order_status"';
-    if($order_status=="Processing" || $order_status=="Payment Pending" || $order_status=="On Hold" ||  $order_status=="Canceled" ||  $order_status=="Completed"){
+    $field_name='name="status" id="order_status"';
+    if($order_status=="Processing" || $order_status=="Payment Pending" || $order_status=="On Hold" ||  $order_status=="Canceled" ){
         $option= $processingOption;
        
-    }else if($order_status=="Pending Invoiced" || $order_status=="Invoiced" || $order_status=="Stock Out"){
+    }else if($order_status=="Pending Invoiced" || $order_status=="Completed" || $order_status=="Invoiced" || $order_status=="Stock Out"){
         $option= $InvoicedOption;
        
     }else if($order_status=="Delivered" || $order_status=="Customer On Hold" ||
