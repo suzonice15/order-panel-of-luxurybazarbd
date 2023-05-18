@@ -54,8 +54,7 @@
                         </div>
                         <div class="col-12 col-md-4">
                         
-                        </div>
-                        
+                        </div>                        
 
                     </div>
                     <div class='row mt-2'>

@@ -1,7 +1,7 @@
 @extends('admin.master')
-@section('main',"Redex Booking")
-@section('active',"Redex Booking")
-@section('title',"Redex Booking")
+@section('main',"Pathao Booking")
+@section('active',"Pathao Booking")
+@section('title',"Pathao Booking")
 @section('main-content')
     <style>
         .img-responsive {
@@ -17,7 +17,7 @@
     </style>
     <section class="content">
     <div class="container" style="background:#fff;margin-bottom: 9px;">
-       <form action="{{url('/')}}/admin/productBookingToRedex" method="get" >
+       <form action="{{url('/')}}/admin/productBookingToPatho" method="get" >
         <div class="row">
             <div class="col-6 col-lg-3">
                 <div class="form-group"  >
@@ -145,16 +145,16 @@
                 $("#send").prop("disabled",true);
                 $("#send").text("Please Wait.....");
                 $.ajax({
-                    url: '{{url('/')}}/admin/productBookingToRedex',
+                    url: '{{url('/')}}/admin/productBookingToPatho',
                     data: {
                         order_id: order_id,
                         "_token": "{{csrf_token()}}"
                     },
                     method: 'post',
                     success: function (data) {
-                      alert(data)
+                      
                         $("#send").text("Successfully done !");
-                       //   location.reload();
+                        location.reload();
                     },
                     error:function(data){
                         $("#send").prop("disabled",false);

@@ -7,6 +7,14 @@ use App\Http\Controllers\admin\DashboardController;
 use App\Http\Controllers\admin\OrderController;
 use App\Http\Controllers\admin\SettingController;
 use App\Http\Controllers\admin\ProductBookingController;
+use App\Http\Controllers\admin\CourierAddressController;
+
+
+
+// Route::get('/patao_city', [CourierAddressController::class, 'patao_city']);
+// Route::get('/patao_zone', [CourierAddressController::class, 'patao_zone']);
+// Route::get('/patao_area', [CourierAddressController::class, 'patao_area']);
+// Route::get('/redexArea', [CourierAddressController::class, 'redexArea']);
 
 
 Route::group(['prefix'=>'admin',
@@ -43,6 +51,7 @@ Route::group(['prefix'=>'admin',
     Route::get('getOrderMeta', [OrderController::class, 'getOrderMeta']);   
     Route::get('getCityByCourierId', [OrderController::class,'getCityByCourierId']);
     Route::get('getZoneByCityId', [OrderController::class, 'getZoneByCityId']);   
+    Route::get('getAreaByZoneId', [OrderController::class, 'getAreaByZoneId']);   
 
     Route::post('/orderExchange', [OrderController::class, 'orderExchange']);
     Route::get('/order/pagination', [OrderController::class, 'pagination']); 
@@ -53,6 +62,10 @@ Route::group(['prefix'=>'admin',
 //    start  product booking route 
 Route::get('/productBookingToRedex', [ProductBookingController::class, 'productBookingToRedex']);
 Route::post('/productBookingToRedex', [ProductBookingController::class, 'sendProductToRedex']);
+
+Route::get('/productBookingToPatho', [ProductBookingController::class, 'productBookingToPatho']);
+Route::post('/productBookingToPatho', [ProductBookingController::class, 'sendProductToPatho']);
+
 
 Route::get('/productBookingToSteadFast', [ProductBookingController::class, 'productBookingToSteadFast']);
 Route::post('/productBookingToSteadFast', [ProductBookingController::class, 'sendProductToSteaddFast']);
@@ -80,5 +93,7 @@ Route::get('/admin/cache-clean',
         return view('admin.setting.cache');
     }
 );
+
+
 
 Route::get('/{id}', [AdminController::class,'login']);

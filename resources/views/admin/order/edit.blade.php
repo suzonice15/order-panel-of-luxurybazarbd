@@ -9,11 +9,11 @@
         <section class="content">
             <div class="container-fluid">
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-5">
                         @include('admin.order.includes.customer_information')
                         @include('admin.order.includes.order_edit_history')
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-7">
                         <div class="card card-info">
                             <div class="card-header">
                                 <h3 class="card-title">Product Information</h3>

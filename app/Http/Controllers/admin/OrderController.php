@@ -745,20 +745,31 @@ $row_data=array();
 
      public function getCityByCourierId(Request $request)
      {
-          $citis= DB::table('cities')->where('courier_id',$request->courier_id)->get();
+        // patao=30
+        // redex=24
+        $courier_id=$request->courier_id;
+        if($courier_id==30) {         
+        $citis= DB::table('courier_city')
+                        ->where('courier_id',$courier_id)
+                        ->get();
          $html='<select  required name="city_id" class="custom-select rounded-0 select2" id="city_id">
                                              <option value="">---Please Select Courier----</option>';
-         if(count($citis) > 0) {
- 
- 
-             foreach ($citis as $city) {
-                 $html .= '<option value="' . $city->id . '">' . $city->cityName . '</option>';
-             }
-         }else{
- 
-             $html='<select  required name="city_id" class="custom-select rounded-0 select2" id="city_id">
-                                             <option value="">---There are no City Assing----</option>';
-         }
+
+        foreach ($citis as $city) {
+            $html .= '<option value="' . $city->database_id . '">' . $city->city_name . '</option>';
+        }  
+    }elseif($courier_id==24){
+        $areas= DB::table('courier_area')
+                        ->where('courier_id',$courier_id)
+                        ->get();
+         $html='<select  required name="area_id" class="custom-select rounded-0 select2" id="area_id">
+                                             <option value="">---Please Select Courier----</option>';
+
+        foreach ($areas as $area) {
+            $html .= '<option value="' . $area->database_id . '">' . $area->area_name . '</option>';
+        }  
+
+    }
  
          $html .='</select>';
          return $html;
@@ -768,12 +779,32 @@ $row_data=array();
 
      public function getZoneByCityId(Request $request)
      {
-         $zones=DB::table('zones')->select('id','zoneName')->where(['city_id'=>$request->city_id,'status'=>'Active'])->get();
+         $zones=DB::table('courier_zone')->select('database_id','zone_name')
+                    ->where(['courier_id'=>$request->courier_id])
+                    ->where(['city_id'=>$request->city_id])
+                    ->get();
 
          $html='<select name="zone_id" id="zone_id" class="form-control select2">
               <option value="">---Select Option---</option>';
          foreach($zones as $zone){
-             $html .='<option value="'.$zone->id.'">'.$zone->zoneName.'</option>';
+             $html .='<option value="'.$zone->database_id.'">'.$zone->zone_name.'</option>';
+         }
+         $html .='</select>';
+         echo $html;
+     }
+
+     
+     public function getAreaByZoneId(Request $request)
+     {
+         $areas=DB::table('courier_area')->select('database_id','area_name')
+                    ->where(['courier_id'=>$request->courier_id])
+                    ->where(['zone_id'=>$request->zone_id])
+                    ->get();
+
+         $html='<select name="area_id" id="area_id" class="form-control select2">
+              <option value="">---Select Option---</option>';
+         foreach($areas as $area){
+             $html .='<option value="'.$area->database_id.'">'.$area->area_name.'</option>';
          }
          $html .='</select>';
          echo $html;

@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Redirect;
 
 class CourierAddressController extends Controller
 {
+    protected $patao_courier_id=30;
+    protected $redex_courier_id=24;
      public function getZone(Request $request)
     {
         
@@ -213,7 +215,10 @@ echo "Total selected order for booking :".$total. ". Total success to booking ".
 
 }
 
-    public function city(){ 
+    public function patao_city(){ 
+         $patao_courier_id=$this->patao_courier_id;
+        DB::table('courier_city')->where('courier_id',$patao_courier_id)->delete(); 
+
         $curl = curl_init();
         curl_setopt_array($curl, array(
             CURLOPT_URL => 'https://api-hermes.pathao.com/aladdin/api/v1/countries/1/city-list',
@@ -227,22 +232,26 @@ echo "Total selected order for booking :".$total. ". Total success to booking ".
         ));        
         $response = curl_exec($curl);
        $data= json_decode($response);
+       
        foreach($data->data->data as $city){ 
-            $data_array['courier_id']=1; //for //pathao
-            $data_array['city_id']=$city->city_id;
+            $data_array['courier_id']=$patao_courier_id; //for //pathao
+            $data_array['database_id']=$city->city_id;
             $data_array['city_name']=$city->city_name;
-           // $data[]= $data_array; 
-            DB::table('courier_city')->insert($data_array);
-       } 
+            $data_insert_array[]= $data_array; 
+          
+       }
+       DB::table('courier_city')->insert($data_insert_array); 
     }
 
-    public function zone(){ 
-      
-     $city=  DB::table('courier_city')->get();
-       foreach( $city as $row_city){ 
+    public function patao_zone(){ 
+        $patao_courier_id=$this->patao_courier_id;
+        DB::table('courier_zone')->where('courier_id',$patao_courier_id)->delete();  
+       
+       $cities=  DB::table('courier_city')->where('courier_id',$patao_courier_id)->get();
+       foreach( $cities as $row_city){ 
         $curl = curl_init();
         curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://api-hermes.pathao.com/aladdin/api/v1/cities/'.$row_city->city_id.'/zone-list',
+            CURLOPT_URL => 'https://api-hermes.pathao.com/aladdin/api/v1/cities/'.$row_city->database_id.'/zone-list',
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
@@ -254,31 +263,44 @@ echo "Total selected order for booking :".$total. ". Total success to booking ".
         
         $response = curl_exec($curl);
        $data= json_decode($response);
-
+       $data_insert_array=[];
        foreach($data->data->data as $zone){ 
-            $data_array['courier_id']=1; //for //pathao
-            $data_array['city_id']=$row_city->city_id; 
-            $data_array['zone_id']=$zone->zone_id;
+            $data_array['courier_id']= $patao_courier_id; //for //pathao
+            $data_array['city_id']=$row_city->database_id; 
+            $data_array['database_id']=$zone->zone_id;
             $data_array['zone_name']=$zone->zone_name; 
-            DB::table('courier_zone')->insert($data_array);
+            $data_insert_array[]= $data_array;  
+          
        } 
+       DB::table('courier_zone')->insert($data_insert_array);
     }
 
 }
 
 
-public function area(){ 
+public function patao_area(){ 
+    $patao_courier_id=$this->patao_courier_id;
+    DB::table('courier_area')->where('courier_id',$patao_courier_id)->delete();  
 
     ini_set('max_execution_time', 1800000000);
-    $city=  DB::table('courier_city')->orderBy('city_id','asc')->get();
+
+    $city=  DB::table('courier_city')
+            ->where('courier_id',$patao_courier_id)
+            ->orderBy('database_id','asc')
+            ->get();
       foreach( $city as $row_city){ 
        $curl = curl_init();
 
-     $zone_list=  DB::table('courier_zone')->where('courier_id',1)->where('city_id',$row_city->city_id)->orderBy('zone_id','asc')->get();
+     $zone_list=  DB::table('courier_zone')
+                    ->where('courier_id',$patao_courier_id)
+                    ->where('city_id',$row_city->database_id)
+                    ->orderBy('database_id','asc')
+                    ->get();
+          $row_data=array();                 
      foreach($zone_list as $zoneRow){
 
        curl_setopt_array($curl, array(
-           CURLOPT_URL => 'https://api-hermes.pathao.com/aladdin/api/v1/zones/'.$zoneRow->zone_id.'/area-list',
+           CURLOPT_URL => 'https://api-hermes.pathao.com/aladdin/api/v1/zones/'.$zoneRow->database_id.'/area-list',
            CURLOPT_RETURNTRANSFER => true,
            CURLOPT_ENCODING => '',
            CURLOPT_MAXREDIRS => 10,
@@ -291,22 +313,62 @@ public function area(){
        
        $response = curl_exec($curl);
       $data= json_decode($response);
-      $row_data=array();
+     
       foreach($data->data->data as $areaRow){ 
-           $data_array['courier_id']=1; //for //pathao
-           $data_array['city_id']=$row_city->city_id; 
-           $data_array['zone_id']=$zoneRow->zone_id;
-           $data_array['area_id']=$areaRow->area_id; 
-           $data_array['area_name']=$areaRow->area_name;  
-           DB::table('courier_area')->insert($data_array);
-          
-      } 
+           $data_array['courier_id']=$patao_courier_id; //for //pathao
+           $data_array['city_id']  =$row_city->database_id; 
+           $data_array['zone_id']  =$zoneRow->database_id;
+           $data_array['database_id'] =$areaRow->area_id; 
+           $data_array['area_name'] =$areaRow->area_name;  
 
-         
+           $row_data[]= $data_array;
+              
+      }     
    }
+   DB::table('courier_area')->insert($row_data); 
    
 
 }
+
+}
+
+public function redexArea(){
+   
+    ini_set('max_execution_time', 1800000000);
+
+ $redex_courier_id=$this->redex_courier_id;
+ DB::table('courier_area')
+        ->where('courier_id',$redex_courier_id)
+        ->delete();  
+
+$curl = curl_init();
+curl_setopt_array($curl, array(
+  CURLOPT_URL => 'https://openapi.redx.com.bd/v1.0.0-beta/areas',
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_ENCODING => '',
+  CURLOPT_MAXREDIRS => 10,
+  CURLOPT_TIMEOUT => 0,
+  CURLOPT_FOLLOWLOCATION => true,
+  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_CUSTOMREQUEST => 'GET',
+  CURLOPT_HTTPHEADER => array(
+    'API-ACCESS-TOKEN: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMTAzOCIsImlhdCI6MTY1MzM3Nzk4NiwiaXNzIjoieExQelFrTmZyZjJnb3JkT2s1U1E0NFhTQVdWV0Jqd0MiLCJzaG9wX2lkIjoyMTAzOCwidXNlcl9pZCI6ODE0Mjd9.ppTa6QWyNUj4_N1g48mZ2VsesbhRsEqwfs4ySFxPm5M',
+   
+),
+));
+$response = curl_exec($curl);
+curl_close($curl);  
+ $data= json_decode($response);  
+   foreach( $data->areas as $area){  
+        $data_array['courier_id']=$redex_courier_id; //for //redex 
+        $data_array['database_id'] =$area->id; 
+        $data_array['area_name'] =$area->division_name.' > '.$area->district_name.' > '.$area->name;  
+        $row_data[]= $data_array;          
+      
+}
+ 
+DB::table('courier_area')->insert($row_data); 
+
 
 }
 

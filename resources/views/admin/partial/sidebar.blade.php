@@ -117,6 +117,13 @@ $status=Session::get("status");
                 </li>
 
                 <li class="nav-item">
+                    <a href="{{url('/')}}/admin/productBookingToPatho" class="nav-link">
+                        <i class="fas fa-arrow-circle-right nav-icon"></i>
+                        <p>Order Send To Patao </p>
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a  href="{{url('/')}}/admin/order/getSinglePercel" class="nav-link">
                         <i class="fas fa-arrow-circle-right nav-icon"></i>
                         <p>Parcel  Tracking</p>
