@@ -58,12 +58,12 @@ $status=Session::get("status");
                     </a>
                 </li>     
 				
-				 <!-- <li class="nav-item">
+				  <li class="nav-item">
                     <a href="{{url('/')}}/admin/orderStatus/report" class="nav-link">
                         <i class="fas fa-arrow-circle-right nav-icon"></i>
                         <p>Order Status Report </p>
                     </a>
-                </li> -->
+                </li> 
 
 				
                 @if(Auth::user()->role_id !=3)

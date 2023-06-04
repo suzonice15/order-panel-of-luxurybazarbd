@@ -68,19 +68,7 @@
 
                     <div class="form-group"  >
                         <label>Order Status</label>
-                        <select name="order_status" id="order_status" class="form-control ">
-                            <option value="">------Select----------</option>
-                            <option value="new">New</option>
-                            <option value="pending_payment">Pending for Payment</option>
-                            <option value="pending">Pending</option>
-                            <option value="on_courier"> Courier</option>
-                            <option value="delivered">Delivered</option>
-                            <option value="cancled">Cancelled</option>
-                            <option value="ready_to_deliver">Pending Invoice</option>
-                            <option value="invoice">Invoice</option>
-                            <option value="booking">Booking</option>
-                            <option value="return">Return</option>
-                        </select>
+                        {{getAllOrderStatusForOrderIndex("all",2)}}
                     </div>
                 </div>
 
@@ -97,22 +85,15 @@
 
 
                 <div class="col-6 col-lg-3">
-
                     <div class="form-group"  >
                         <label>Ending Date </label>
                         <input type="date" id="ending_date" name="ending_date" value="{{date("Y-m-d",strtotime($ending_date))}}" class="form-control">
                     </div>
                 </div>
-                <div class="col-6 col-lg-2">
-
-<div class="form-group"  >
-    <label>Order ID</label>
-    <input type="text" id="order_id" placeholder="Order ID" name="order_id" value="" class="form-control">
-</div>
-</div>
+                
 
 
-                <div class="col-6 col-lg-1">
+ <div class="col-6 col-lg-1">
 <br>
                     <div class="form-group" >
                        <input type="submit"  style="margin-top: 8px;" value="Search" class="form-control btn btn-success">
@@ -161,7 +142,6 @@
             <button onClick="orderStatus('Processing')" type="button"
                     class="btn btn-primary order_status  ">Processing<span class="badge badge-light">      {{orderStatusReport('Processing',$start_date,$ending_date)}}</span>
             </button>
- 
 
             <button onClick="orderStatus('Payment Pending')" type="button"
                     class="btn btn-primary order_status ">Payment Pending<span class="badge badge-light">   {{orderStatusReport('Payment Pending',$start_date,$ending_date)}}    </span>
@@ -172,6 +152,16 @@
             <button onClick="orderStatus('On Hold')" type="button"
                     class="btn btn-primary order_status ">  On Hold  <span class="badge badge-light">  {{orderStatusReport('On Hold',$start_date,$ending_date)}} </span>
             </button>
+
+            <button onClick="orderStatus('Stock Out')" type="button"
+                    class="btn btn-primary order_status "> Stock Out  <span class="badge badge-light">  {{orderStatusReport('Stock Out',$start_date,$ending_date)}} </span>
+            </button>
+
+            <button onClick="orderStatus('Request to Return')" type="button"
+                    class="btn btn-primary order_status "> Request to Return <span class="badge badge-light">  {{orderStatusReport('Request to Return',$start_date,$ending_date)}} </span>
+            </button>
+            
+           
 
             <button onClick="orderStatus('Invoiced')" type="button"
                     class="btn btn-primary order_status ">    Invoiced <span class="badge badge-light">    {{orderStatusReport('Invoiced',$start_date,$ending_date)}}  </span>
@@ -191,172 +181,45 @@
         </div>
 
         <table class="table table-bordered">
+        <thead>
+                        <tr style="text-align:center">
+                        <th> 
+  
+                      SL
+                    
+                        </th>
+                            <th class='text-center'>
+                           Invoice ID
+                         
+                            </th>
+                            <th style="width:15%;text-align:left">
+                           Customers
+                            </th> 
+                            <th style="width:150px">Products</th>
+                            <th>Total</th>
+                            <th>
+                              Courier
+                              </th> 
+                              <th style="width:250px">
+                                Order Date
+                              </th>
+                              <th  style="width:150px" >
+                                 Status
+                              </th>                              
+                             <th>                           
+                             Staff                              
+                            </th>                             
+                            <th width="5%">                              
+                            Action </th>
 
-                <thead>
-                <tr style="text-align:center">
-                    <th width="10%"> Order ID </th>
-                    <th width="10%"> Courier Information</th>
-                    <th style="width: 9%;">
-                        <span style="font-size: 15px;"> Office Staff</span>
-                        <br/>
-                    </th>
-                    <th style="width:20%;text-align:left">Customer</th>
-                    <th style="text-align:left">Products</th>
-                    <th> Amount</th>
-                    <th> Status</th>
-                    <th> Action</th>
-                </tr>
-                </thead>
+                        </tr>
+                        </thead>
             <tbody id="tbody">
-            @if($orderStatus !='')
-            @foreach($orders as $order)
-                    <?php
-                    $order_track=DB::table('order_edit_track')->where('order_id',$order->order_id)->orderBy('id','desc')->value('updated_date');
-                    $areaInfo = DB::table('area')->where('area_id', $order->area_id)->first();
+            @if($orderStatus !='') 
 
-                    ?>
-            <tr>
-                <td><span   class="badge badge-pill badge-danger" style="font-size:18px">  {{$order->order_id}}</span>
-                    {{date('d-m-Y h:i a',strtotime($order->created_time))}}
-                    @if($order->shipment_time)
-                        <br/>
-                        <span style="color:green">
-                      Shipping Date
-                            {{date('d-m-Y',strtotime($order->shipment_time))}}
-                  </span>
-                    @endif
-                    @if($order->return_date)
-                        <br/>
-                        <span style="color:red">
-                      Return Date
-                            {{date('d-m-Y',strtotime($order->return_date))}}
-                  </span>
-
-                    @endif
-                </td>
-                <td>
-                                            <span style="color:red;font-size: 17px;font-weight: bold">
-                                                 {{$order->courier_service}}
-                                            </span>
-                    <br/>
-                    @if($areaInfo)
-                        <span style="color:green;font-size: 15px;font-weight: bold">
-                                                 {{$areaInfo->area_name}}
-                                            </span>
-                    @endif
-                    <br/>
-                          <span style="color:red;font-size: 15px;font-weight: bold">
-                                                Weight : {{$order->weight}}
-                                            </span>
-                    <br/>
-                                              <span style="color:black;font-size: 15px;font-weight: bold">
-                                                Invoice : {{$order->invoice_id}}
-                                            </span>
-                </td>
-
-
-                <td style="text-align: center" >
-
-                    <span   data-toggle="modal" data-target="#modal-edit" onclick="orderEdit({{$order->order_id}})" class="badge badge-pill badge-primary"> {{officeStaffName($order->staff_id)}}</span>
-                    <span class="badge badge-pill badge-danger" >@if($order->order_area=='outside_dhaka')  Outside Dhaka   @else Inside Dhaka @endif</span>
-                    <span class="badge badge-pill badge-danger" >{{$order->traking_id}}</span>
-
-                </td>
-
-
-
-
-                <td>
-                    <span   class="badge badge-pill badge-info" style="font-size:18px">   {{$order->billing_name}}</span>
-                    <br>
-                    <span   class="badge badge-pill badge-success" style="font-size:18px">  {{$order->billing_mobile}}</span>
-                    <br>
-                    {{$order->shipping_address1}}
-                    <br>
-                    <span style="color:red;font-weight: 400">Note: {{$order->order_note}} </span>
-                    @if($order_track)
-                        <br>
-                        <span class="badge badge-pill badge-success" style="font-size:15px">{{date("d-m-Y",strtotime($order_track))}}</span>
-                        <span class="badge badge-pill badge-info" style="font-size:15px">{{date("h:i a",strtotime($order_track))}}</span>
-                    @endif
-
-                </td>
-                <td>
-                    <?php
-                    $order_items = unserialize($order->products);
-                    if(isset($order_items['items'])) {
-                    foreach ($order_items['items'] as $product_id => $item) {
-                    $featured_image = isset($item['featured_image']) ? $item['featured_image'] : null;
-                     $sku=DB::table('product')->where('product_id',$product_id)->value('sku');
-                    ?>
-                    <span class="product-title"><?=($item['name'])?></span>
-                    <img  class="img-responsive"  width="50" src="<?=$featured_image?>" />
-                    <p> {{$item['price']}}
-                        <i class="fal fa-times"></i>
-                        <?=($item['qty'])?>= {{$item['subtotal']}}
-                    </p>
-                     <p  style="color:red;font-weight:bold;position: absolute;margin-top: 8px;">Code :{{$sku}}</p>
-
-                    <br>
-                    <?php }
-                    }
-                    ?>
-                </td>
-
-                <td>
-                    {{$order->order_total}}
-
-                </td>
-
-                <td>
-                    <?php if($order->order_status=='pending_payment'){
-                    ?>
-                    <span   class="badge badge-pill badge-info" style="background-color:#ffad55;color: black;border: none;" >Payment Pending</span>
-                    <?php  } elseif ($order->order_status=='new') { ?>
-                    <span   class="badge badge-pill badge-info">{{ $order->order_status }}</span>
-                    <?php  } elseif ($order->order_status=='invoice') { ?>
-                    <span   class="badge badge-pill badge-info">Invoice</span>
-                    <?php  } elseif ($order->order_status=='on_courier') { ?>
-                    <span   class="badge badge-pill badge-danger">{{ $order->order_status }}</span>
-                    <?php  } elseif ($order->order_status=='delivered') { ?>
-                    <span   class="badge badge-pill badge-success">{{ $order->order_status }}</span>
-                    <?php  } elseif ($order->order_status=='refund') { ?>
-                    <span   class="badge badge-pill badge-danger">{{ $order->order_status }}</span>
-                    <?php  } elseif ($order->order_status=='cancled') { ?>
-                    <span   class="badge badge-pill badge-danger">{{ $order->order_status }}</span>
-                    <?php  } elseif ($order->order_status=='phone_pending') { ?>
-                    <span    class="badge badge-pill badge-info" style="background-color:#ffad55;color: black;border: none;" >Phone Pending </span>
-                    <?php  } elseif ($order->order_status=='failed') { ?>
-                    <span    class="badge badge-pill badge-danger"  >Failded Delevery </span>
-                    <?php  } elseif ($order->order_status=='return') { ?>
-                    <span    class="badge badge-pill badge-danger"  >Return</span>
-                    <?php  } else {  ?>
-                    <span   class="badge badge-pill badge-success">Pending Invoice</span>
-                    <?php } ?>
-                    <br>
-                </td>
-                <td>
-                    <a title="edit"   href="{{ url('admin/order') }}/{{ $order->order_id }}/edit" class=" btn btn-success btn-sm">
-                        <i class="fa fa-pencil"></i>
-                    </a>
-
-                    @if(($order->order_status=='ready_to_deliver') && ($order->order_print_status !=1))
-
-                        <a title="print"  class="btn btn-info btn-sm" target="_blank" href="{{url('/')}}/admin/single_order_invoice/{{ $order->order_id }}?name={{ Session::get('name') }}">
-
-                            <i class="fa fa-print "></i>
-                        </a>
-                    @endif
-
-
-                </td>
-
-
-
-
-            </tr>
-        @endforeach
-                @endif
+            @include('admin.order.orderStatusReport_pagination')
+            @endif
+ 
             </tbody>
 
                 </table>
@@ -368,7 +231,7 @@
     </div>
 
     <script>
-        $("#order_status").val("{{$orderStatus}}");
+        $("#convert_order_status").val("{{$orderStatus}}");
         function getTotalProducts(status){
            var ending_date= $("#ending_date").val();
            var starting_date= $("#starting_date").val();

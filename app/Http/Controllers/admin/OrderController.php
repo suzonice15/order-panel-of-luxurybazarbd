@@ -26,6 +26,9 @@ class OrderController extends Controller
     }
     public function index(Request $request)
     {
+        setCacheData();
+        staticSessionData();
+   
         $staff_id = Auth::user()->id;
         $role_status = Auth::user()->role_id;
         $order_status='Processing';
@@ -168,8 +171,15 @@ class OrderController extends Controller
 
             if($order_status !='All'){
                 if($customer_phone=='' && $invoice_id==''){
+                  //  $query->where('status', $order_status);
+                  if(in_array($order_status,['Completed','Pending Invoiced'])){
+                    $query->whereIn('status', ['Completed','Pending Invoiced']);
+                }else{
                     $query->where('status', $order_status);
                 }
+                }
+
+              
                 
             }  
 
@@ -537,41 +547,32 @@ class OrderController extends Controller
 
         $data['orderStatus'] = $request->order_status;
         
-        if ($request->order_id ) {
-
-            $data['orders'] = DB::table('orders') 
-            ->where('order_id', '=', $request->order_id)
-            ->orderBy('order_id', 'desc')
-            ->get();
-            return view('admin.order.orderStatusReport', $data);
-        }
+         
 
 
 
-        if ($request->order_status && $request->starting_date && $request->ending_date) {
+        if ($request->convert_order_status && $request->starting_date && $request->ending_date) {
 
             $data['start_date'] = date("Y-m-d", strtotime($request->starting_date));
             $data['ending_date'] = date("Y-m-d", strtotime($request->ending_date));
-            $data['orderStatus'] = $request->order_status;
+            $data['orderStatus'] = $request->convert_order_status;
             if($request->order_status=='return'){
-                $data['orders'] = DB::table('orders')
-                    ->where('return_date', '>=', $data['start_date'])
+                $data['orders'] = Order::with('customer','products')->where('return_date', '>=', $data['start_date'])
                     ->where('return_date', '<=', $data['ending_date'])
-                    ->where('status', '=', $request->order_status)
+                    ->where('status', '=', $request->ordconvert_order_statuser_status)
                     ->orderBy('id', 'desc')
                     ->get();
             }elseif($request->order_status=='booking'){
-                $data['orders'] = DB::table('orders')
-                    ->where('shipment_time', '>=', $data['start_date'])
+                $data['orders'] = Order::with('customer','products')->where('shipment_time', '>=', $data['start_date'])
                     ->where('shipment_time', '<=', $data['ending_date'])
-                    ->where('status', '=', $request->order_status)
+                    ->where('status', '=', $request->convert_order_status)
                     ->orderBy('id', 'desc')
                     ->get();
             }else{
-                $data['orders'] = DB::table('orders')
-                    ->where('orderDate', '>=', $data['start_date'])
+              
+                $data['orders'] = Order::with('customer','products')->where('orderDate', '>=', $data['start_date'])
                     ->where('orderDate', '<=', $data['ending_date'])
-                    ->where('status', '=', $request->order_status)
+                    ->where('status', '=', $request->convert_order_status)
                     ->orderBy('id', 'desc')
                     ->get();
 
@@ -622,7 +623,7 @@ class OrderController extends Controller
     public function getTotalProductsReport(Request $request)
     {
         $data['orders'] = getTotalOrderListItems($request->status, $request->starting_date, $request->ending_date);
-        return view('admin.order.order_loop', $data);
+        return view('admin.order.orderStatusReport_pagination', $data);
     }
 
    

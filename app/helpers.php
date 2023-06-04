@@ -1,5 +1,6 @@
 <?php
 //use Auth;
+use App\Models\Order;
 function totalOrder($order_status,$order_date=null)
 {
     $staff_id = Auth::user()->id;
@@ -12,7 +13,12 @@ function totalOrder($order_status,$order_date=null)
         $query->whereDate('orderDate', $order_date); 
     }
     if($order_status !='All'){
-      $query->where('status', $order_status);
+        if(in_array($order_status,['Completed','Pending Invoiced'])){
+            $query->whereIn('status', ['Completed','Pending Invoiced']);
+        }else{
+            $query->where('status', $order_status);
+        }
+     
     }
     return $query->count();
 }
@@ -161,20 +167,16 @@ function getTotalOrderListItems($status,$start_date,$ending_date)
 {
 if($status==1) {
 
-
-    return DB::table('orders')
-        ->whereDate('orderDate', '>=', $start_date)
+    return Order::whereDate('orderDate', '>=', $start_date)
         ->whereDate('orderDate', '<=', $ending_date)
         ->get();
 }elseif($status==2){
-    return DB::table('orders')
-        ->whereDate('orderDate', '>=', $start_date)
+    return Order::whereDate('orderDate', '>=', $start_date)
         ->whereDate('orderDate', '<=', $ending_date)
         ->where('order_created_by', '=', 'online')
         ->get();
 }else{
-    return DB::table('orders')
-        ->whereDate('orderDate', '>=', $start_date)
+    return Order::whereDate('orderDate', '>=', $start_date)
         ->whereDate('orderDate', '<=', $ending_date)
         ->where('order_created_by', '!=', 'online')
         ->get();
