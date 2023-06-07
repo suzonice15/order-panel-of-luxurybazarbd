@@ -480,46 +480,69 @@ class OrderController extends Controller
                 $data['searchDateEnd'] = $start_date;
                 $data['searchText'] = $request->product_code;
 
-                $data['orders'] = DB::table('product_order_report')
-                    ->select('sku', 'product_title', 'product_code', 'product_order_report.product_id', DB::raw('count(*) as total'))
-                    ->join('product', 'product.product_id', '=', 'product_order_report.product_id')
-                    ->where('product_code', '=', $request->product_code)
-                    ->groupBy('product_order_report.product_id')->get();
+                $data['orders'] = OrderProduct::select('*', DB::raw('count(quantity) as total')) 
+                                    ->where('product_id','!=',0)
+                                    ->where('productCode',$request->product_code)
+                                    ->groupBy('product_id')
+                                    ->orderBy('total','desc')
+                                    ->get(); 
+
             } else if ($request->order_date_start && $request->order_date_end) {
                 $start_date = date("Y-m-d", strtotime($request->order_date_start));
                 $ending_date = date("Y-m-d", strtotime($request->order_date_end));
                 $data['searchDateStart'] = $start_date;
                 $data['searchDateEnd'] = $ending_date;
-                $data['orders'] = DB::table('product_order_report')
-                    ->select('sku', 'product_title', 'product_code', 'product_order_report.product_id', DB::raw('count(*) as total'))
-                    ->join('product', 'product.product_id', '=', 'product_order_report.product_id')
-                    ->whereBetween('orderDate', [$start_date, $ending_date])->groupBy('product_order_report.product_id')->get();
 
+                $order_ids=Order::whereBetween('orderDate', [$start_date, $ending_date])
+                        ->pluck('id')
+                        ->toArray(); 
+                        
+
+                $data['orders'] = OrderProduct::select('*', DB::raw('count(quantity) as total'))
+                                ->whereIn('order_id',$order_ids)
+                                ->where('product_id','!=',0)
+                                ->groupBy('product_id')
+                                ->orderBy('total','desc')
+                                ->get();
             } else {
                 $start_date = date("Y-m-d", strtotime($request->order_date_start));
                 $ending_date = date("Y-m-d", strtotime($request->order_date_end));
                 $data['searchDateStart'] = $start_date;
                 $data['searchDateEnd'] = $ending_date;
                 $data['searchText'] = $request->product_code;
-                $data['orders'] = DB::table('product_order_report')
-                    ->select('sku', 'product_title', 'product_code', 'product_order_report.product_id', DB::raw('count(*) as total'))
-                    ->join('product', 'product.product_id', '=', 'product_order_report.product_id')
-                    ->where('product_code', '=', $request->product_code)
-                    ->whereBetween('orderDate', [$start_date, $ending_date])
-                    ->groupBy('product_order_report.product_id')->get();
+
+                $order_ids=Order::whereBetween('orderDate', [$start_date, $ending_date])
+                            ->pluck('id')
+                            ->toArray(); 
+                $data['orders'] = OrderProduct::select('*', DB::raw('count(quantity) as total'))
+                                    ->whereIn('order_id',$order_ids)
+                                    ->where('productCode',$request->product_code)
+                                    ->where('product_id','!=',0)
+                                    ->groupBy('product_id')
+                                    ->orderBy('total','desc')
+                                    ->get();
 
             }
 
 
         } else {
+
             $start_date = date("Y-m-d");
             $ending_date = date("Y-m-d");
             $data['searchDateStart'] = $start_date;
             $data['searchDateEnd'] = $start_date;
-            $data['orders'] = DB::table('product_order_report')
-                ->select('sku', 'product_title', 'product_code', 'product_order_report.product_id', DB::raw('count(*) as total'))
-                ->join('product', 'product.product_id', '=', 'product_order_report.product_id')
-                ->whereBetween('orderDate', [$start_date, $ending_date])->groupBy('product_order_report.product_id')->get();
+
+            $order_ids=Order::whereBetween('orderDate', [$start_date, $ending_date])
+                    ->pluck('id')
+                    ->toArray();                  
+
+            $data['orders'] = OrderProduct::select('*', DB::raw('count(quantity) as total'))
+                            ->where('order_id',$order_ids)
+                            ->where('product_id','!=',0)
+                            ->groupBy('product_id')
+                            ->orderBy('total','desc')
+                            ->get();
+                           
 
         }
 

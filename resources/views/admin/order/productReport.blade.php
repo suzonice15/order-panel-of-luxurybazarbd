@@ -69,8 +69,8 @@
                           ?>
                     <tr>
                       <td>{{++$key}}</td>
-                      <td>{{$order->product_title}}</td>
-                      <td style="text-align:center">{{$order->sku}}</td>
+                      <td>{{$order->productName}}</td>
+                      <td style="text-align:center">{{$order->productCode}}</td>
                       <td style="text-align:center">{{$order->total}}</td>
                        
                      </tr>
