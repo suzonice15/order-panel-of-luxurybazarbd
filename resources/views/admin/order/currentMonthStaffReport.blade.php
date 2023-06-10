@@ -28,6 +28,7 @@
                                         <th>On Hold</th>
                                         <th>Completed</th>
                                         <th>Pending Invoiced</th>
+                                        <th>Invoiced</th>
                                         <th>Delivered</th>
                                         <th>Return</th>
                                         <th>Canceled</th>
@@ -47,6 +48,7 @@
                                             <td>{{getOrderStatus('On Hold',$order->user_id)}}</td>
                                             <td>{{getOrderStatus('Completed',$order->user_id)}}</td>
                                             <td>{{getOrderStatus('Pending Invoiced',$order->user_id)}}</td>                                            
+                                            <td>{{getOrderStatus('Invoiced',$order->user_id)}}</td>                                            
                                             <td>{{getOrderStatus('Delivered',$order->user_id)}}</td>
                                             <td>{{getOrderStatus('Return',$order->user_id)}}</td>
                                             <td>{{getOrderStatus('Canceled',$order->user_id)}}</td>

@@ -533,17 +533,19 @@ class OrderController extends Controller
             $data['searchDateStart'] = $start_date;
             $data['searchDateEnd'] = $start_date;
 
+           
             $order_ids=Order::whereBetween('orderDate', [$start_date, $ending_date])
-                    ->pluck('id')
-                    ->whereIn('status',['Delivered','Invoiced'])
-                    ->toArray();                  
+            ->whereIn('status',['Delivered','Invoiced'])
+            ->pluck('id')
+            ->toArray(); 
+            
 
-            $data['orders'] = OrderProduct::select('*', DB::raw('count(quantity) as total'))
-                            ->where('order_id',$order_ids)
-                            ->where('product_id','!=',0)
-                            ->groupBy('product_id')
-                            ->orderBy('total','desc')
-                            ->get();
+    $data['orders'] = OrderProduct::select('*', DB::raw('count(quantity) as total'))
+                    ->whereIn('order_id',$order_ids)
+                    ->where('product_id','!=',0)
+                    ->groupBy('product_id')
+                    ->orderBy('total','desc')
+                    ->get();
                            
 
         }

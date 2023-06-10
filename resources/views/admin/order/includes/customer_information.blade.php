@@ -210,4 +210,15 @@ $shipment_time =isset($order->orderDate) ? $order->orderDate:date("Y-m-d");
     }
 
    }
+
+   $("#order_status").change(function(){
+
+   let order_status=  $(this).val()
+    if(order_status=="Canceled"){
+        $('#courier_id').prop("required",false);
+    }else{
+        $('#courier_id').prop("required",true);
+    }
+
+   })
 </script>
