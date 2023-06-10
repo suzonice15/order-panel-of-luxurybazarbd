@@ -201,10 +201,10 @@ function getOrderStatus($order_status,$staff_id)
     $start_date = date('Y-m-01');
     $ending_date  = date('Y-m-31');
       return DB::table('orders')
-            ->where('staff_id', '=', $staff_id)
+            ->where('user_id', '=', $staff_id)
             ->where('status', '=', $order_status)
-          ->where('orderDate', '>=', $start_date)
-          ->where('orderDate', '<=', $ending_date)
+            ->where('orderDate', '>=', $start_date)
+            ->where('orderDate', '<=', $ending_date)
             ->count();    
 }
 
@@ -213,8 +213,8 @@ function getPrint($staff_id)
     $start_date = date('Y-m-01');
     $ending_date  = date('Y-m-31');
     return DB::table('orders')
-        ->where('staff_id', '=', $staff_id)
-        ->where('order_print_status', '=', 1)
+        ->where('user_id', '=', $staff_id)
+      //  ->where('order_print_status', '=', 1)
         ->where('orderDate', '>=', $start_date)
         ->where('orderDate', '<=', $ending_date)
         ->count();

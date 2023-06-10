@@ -76,12 +76,12 @@ $status=Session::get("status");
                 </li>
 
                 
-                    <!-- <li class="nav-item">
+                     <li class="nav-item">
                         <a href="{{url('/')}}/admin/currentMonthStaffReport" class="nav-link">
                             <i class="fas fa-arrow-circle-right nav-icon"></i>
                             <p>Current Month Staff Report </p>
                         </a>
-                    </li>   -->
+                    </li>    
 
                     @endif
 

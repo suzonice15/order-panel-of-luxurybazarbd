@@ -472,21 +472,25 @@ class OrderController extends Controller
 
         if ($request->order_date_start || $request->order_date_end || $request->product_code) {
 
-
-            if ($request->product_code) {
-                $start_date = date("Y-m-d");
-
+             if ($request->order_date_start && $request->order_date_end && $request->product_code) {
+                $start_date = date("Y-m-d", strtotime($request->order_date_start));
+                $ending_date = date("Y-m-d", strtotime($request->order_date_end));
                 $data['searchDateStart'] = $start_date;
-                $data['searchDateEnd'] = $start_date;
-                $data['searchText'] = $request->product_code;
+                $data['searchDateEnd'] = $ending_date;
 
-                $data['orders'] = OrderProduct::select('*', DB::raw('count(quantity) as total')) 
-                                    ->where('product_id','!=',0)
-                                    ->where('productCode',$request->product_code)
-                                    ->groupBy('product_id')
-                                    ->orderBy('total','desc')
-                                    ->get(); 
+                $order_ids=Order::whereBetween('orderDate', [$start_date, $ending_date])
+                        ->whereIn('status',['Delivered','Invoiced'])
+                        ->pluck('id')
+                        ->toArray(); 
+                        
 
+                $data['orders'] = OrderProduct::select('*', DB::raw('count(quantity) as total'))
+                                ->whereIn('order_id',$order_ids)
+                                ->where('product_id','!=',0)
+                                ->where('productCode',$request->product_code)
+                                ->groupBy('product_id')
+                                ->orderBy('total','desc')
+                                ->get();
             } else if ($request->order_date_start && $request->order_date_end) {
                 $start_date = date("Y-m-d", strtotime($request->order_date_start));
                 $ending_date = date("Y-m-d", strtotime($request->order_date_end));
@@ -494,6 +498,7 @@ class OrderController extends Controller
                 $data['searchDateEnd'] = $ending_date;
 
                 $order_ids=Order::whereBetween('orderDate', [$start_date, $ending_date])
+                        ->whereIn('status',['Delivered','Invoiced'])
                         ->pluck('id')
                         ->toArray(); 
                         
@@ -505,17 +510,13 @@ class OrderController extends Controller
                                 ->orderBy('total','desc')
                                 ->get();
             } else {
-                $start_date = date("Y-m-d", strtotime($request->order_date_start));
-                $ending_date = date("Y-m-d", strtotime($request->order_date_end));
-                $data['searchDateStart'] = $start_date;
-                $data['searchDateEnd'] = $ending_date;
-                $data['searchText'] = $request->product_code;
+               
+                $data['searchDateStart'] = '';
+                $data['searchDateEnd'] = '';
+                $data['searchText'] = $request->product_code; 
 
-                $order_ids=Order::whereBetween('orderDate', [$start_date, $ending_date])
-                            ->pluck('id')
-                            ->toArray(); 
                 $data['orders'] = OrderProduct::select('*', DB::raw('count(quantity) as total'))
-                                    ->whereIn('order_id',$order_ids)
+                                   
                                     ->where('productCode',$request->product_code)
                                     ->where('product_id','!=',0)
                                     ->groupBy('product_id')
@@ -534,6 +535,7 @@ class OrderController extends Controller
 
             $order_ids=Order::whereBetween('orderDate', [$start_date, $ending_date])
                     ->pluck('id')
+                    ->whereIn('status',['Delivered','Invoiced'])
                     ->toArray();                  
 
             $data['orders'] = OrderProduct::select('*', DB::raw('count(quantity) as total'))
@@ -634,8 +636,9 @@ class OrderController extends Controller
         $start_date = date("Y-m-01");
         $ending_date = date("Y-m-31");
 
-        $data['orders'] = DB::table('order')->select('staff_id', DB::raw('count(order_id) as total'))
-            ->groupBy('staff_id')
+        $data['orders'] = DB::table('orders')
+            ->select('user_id', DB::raw('count(id) as total'))
+            ->groupBy('user_id')
             ->where('orderDate', '>=', $start_date)
             ->where('orderDate', '<=', $ending_date)
             ->get();

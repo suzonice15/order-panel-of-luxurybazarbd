@@ -22,42 +22,34 @@
                                     <thead>
                                     <tr>
                                         <th>SL</th>
-                                        <th>Name</th>
-                                        <th>New</th>
-                                        <th>Pending</th>
-                                        <th>Phone Pending</th>
-                                        <th>Ready To Deliver</th>
-                                        <th>Courier</th>
-                                        <th>Print</th>
-                                        <th>Cancel</th>
+                                        <th>Name</th> 
+                                        <th>Processing</th>
+                                        <th>Payment Pending</th>
+                                        <th>On Hold</th>
+                                        <th>Completed</th>
+                                        <th>Pending Invoiced</th>
                                         <th>Delivered</th>
+                                        <th>Return</th>
+                                        <th>Canceled</th>
                                         <th>Total</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     @foreach($orders as $key=>$order)
-                                        @php
-
-                                        if($order->staff_id==73 || $order->staff_id=='' )
-                                        {
-                                        continue;
-                                        }
-
-
-                                        @endphp
+                                       
 
 
                                         <tr>
                                             <td>{{++$key}}</td>
-                                            <td>{{officeStaffName($order->staff_id)}}</td>
-                                            <td>{{getOrderStatus('new',$order->staff_id)}}</td>
-                                            <td>{{getOrderStatus('pending',$order->staff_id)}}</td>
-                                            <td>{{getOrderStatus('pending_payment',$order->staff_id)}}</td>
-                                            <td>{{getOrderStatus('ready_to_deliver',$order->staff_id)}}</td>
-                                            <td>{{getOrderStatus('on_courier',$order->staff_id)}}</td>
-                                            <td>{{getPrint($order->staff_id)}}</td>
-                                            <td>{{getOrderStatus('cancled',$order->staff_id)}}</td>
-                                            <td>{{getOrderStatus('delivered',$order->staff_id)}}</td>
+                                            <td>{{officeStaffName($order->user_id)}}</td>
+                                            <td>{{getOrderStatus('Processing',$order->user_id)}}</td>
+                                            <td>{{getOrderStatus('Payment Pending',$order->user_id)}}</td>
+                                            <td>{{getOrderStatus('On Hold',$order->user_id)}}</td>
+                                            <td>{{getOrderStatus('Completed',$order->user_id)}}</td>
+                                            <td>{{getOrderStatus('Pending Invoiced',$order->user_id)}}</td>                                            
+                                            <td>{{getOrderStatus('Delivered',$order->user_id)}}</td>
+                                            <td>{{getOrderStatus('Return',$order->user_id)}}</td>
+                                            <td>{{getOrderStatus('Canceled',$order->user_id)}}</td>
                                             <td>{{$order->total}}</td>
                                         </tr>
                                     @endforeach
