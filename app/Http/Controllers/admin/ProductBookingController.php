@@ -68,7 +68,7 @@ class ProductBookingController extends Controller
                        $value = 80;
                        $note = '';//$order->order_note;
                        $invoice_id = $order->invoiceID;
-                       $areaInfo = DB::table('courier_area')->where('database_id', $order->area_id)->first();
+                       $areaInfo = DB::table('courier_area')->where('courier_id',24)->where('database_id', $order->area_id)->first();
                        if ($areaInfo) {
                            $delivery_area = $areaInfo->area_name;
                            $delivery_area_id = $areaInfo->database_id;
@@ -77,7 +77,7 @@ class ProductBookingController extends Controller
                        $tracking = $this->daynamicRedexCode($name, $phone, $address, $cash_collection, $percel_weight, $value, $note, $invoice_id, $delivery_area, $delivery_area_id);
    
                        $object = json_decode($tracking);
-                      
+                     
                         
                        if (isset($object->tracking_id)) {
                            $data['order_tracking_id'] = $object->tracking_id;
@@ -138,7 +138,7 @@ class ProductBookingController extends Controller
                         } ]
                 }',
             CURLOPT_HTTPHEADER => array(
-                'API-ACCESS-TOKEN:Bearer  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODE5NTgiLCJpYXQiOjE2MjM4MjA1NzQsImlzcyI6InZJWkVUbmdPMjJEaGt2ZjJaSkdRZEdMYk94T09EWDBmIiwic2hvcF9pZCI6NjgxOTU4LCJ1c2VyX2lkIjoxMDc1Nzg5fQ.MNW7WR05yfWTNy-EMG1dOW2Zpkxh3dLQ60ipJ3blWJE',
+                'API-ACCESS-TOKEN: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MTQ1ODEiLCJpYXQiOjE2ODc0MTQyNzgsImlzcyI6ImtjWU0zamY3MHhrTGs1NEtvaXZTR2R4MjdxWkljbHFQIiwic2hvcF9pZCI6NjE0NTgxLCJ1c2VyX2lkIjo5NjA4MzF9.6jE5_gVQF9xisAFXu2LShSNL7AOC8hksYvI3ODjv-rA',
                 'Content-Type: application/json'
             ),
         ));

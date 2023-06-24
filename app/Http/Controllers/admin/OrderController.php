@@ -672,9 +672,15 @@ class OrderController extends Controller
 
 
     public function getSinglePercel(Request $request){
-$row_data=array();
+
+        $row_data=array();
         $row_data['name']='';
+        $row_data['courier_id']='';
         if($request->all()) {
+            $row_data['courier_id']=$request->courier_id;
+            $row_data['name']=$request->parcel;
+            if($request->courier_id=="Redex") {
+                 
             $curl = curl_init();
             curl_setopt_array($curl, array(
                 CURLOPT_URL => 'https://openapi.redx.com.bd/v1.0.0-beta/parcel/track/' . $request->parcel,
@@ -686,7 +692,7 @@ $row_data=array();
                 CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
                 CURLOPT_CUSTOMREQUEST => 'GET',
                 CURLOPT_HTTPHEADER => array(
-                    'API-ACCESS-TOKEN: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMTAzOCIsImlhdCI6MTY1MzM3Nzk4NiwiaXNzIjoieExQelFrTmZyZjJnb3JkT2s1U1E0NFhTQVdWV0Jqd0MiLCJzaG9wX2lkIjoyMTAzOCwidXNlcl9pZCI6ODE0Mjd9.ppTa6QWyNUj4_N1g48mZ2VsesbhRsEqwfs4ySFxPm5M'
+                    'API-ACCESS-TOKEN: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MTQ1ODEiLCJpYXQiOjE2ODc0MTQyNzgsImlzcyI6ImtjWU0zamY3MHhrTGs1NEtvaXZTR2R4MjdxWkljbHFQIiwic2hvcF9pZCI6NjE0NTgxLCJ1c2VyX2lkIjo5NjA4MzF9.6jE5_gVQF9xisAFXu2LShSNL7AOC8hksYvI3ODjv-rA'
                 ),
             ));
             
@@ -710,6 +716,8 @@ $row_data=array();
             $row_data['result']=$data;
             $row_data['total_count']=$total_count;
             $row_data['name']=$request->parcel;
+        }
+
         }
          return view('admin.order.getSinglePercel',$row_data);
     }

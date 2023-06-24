@@ -22,18 +22,32 @@
         <div class="container-fluid" style="background:#fff;margin-bottom: 9px;">
             <form action="{{url('/')}}/admin/order/getSinglePercel" method="get">
                 <div class="row">
-                    <div class="col-6 col-lg-4" style="margin-top:12px">
-                        <br/>
+
+                <div class="col-6 col-lg-3 p-2" >
+                      <select name="courier_id" id="courier_id" class="form-control">
+                        <option value="">Select Courier</option>
+                        <option @if($courier_id=="Redex") selected @endif value="Redex">Redex</option>
+                        <!-- <option @if($courier_id=="Patao") selected @endif value="Patao">Patao</option> -->
+                        <option @if($courier_id=="Stead Fast") selected @endif value="Stead Fast">Stead Fast</option>
+
+                      </select>
+                    
+                    </div>
+                 
+                   <div class="col-6 col-lg-3 p-2" >
+                       
                         <input type="text" value="{{$name}}" name="parcel" id="parcel" class="form-control"
                                placeholder="Enter Tracking ID of Redex"/>
+                            
                     </div>
 
-                    <div class="col-6 col-lg-3" style="margin-top:12px">
-                        <br/>
+                    <div class="col-6 col-lg-2 p-2" >
+                        
                         <button type="submit"
                                 class="btn btn-success btn-sm" name="submit" value="submit">
                             <i class="fas fa-search"></i> Parcel Search
                         </button>
+                       
 
 
                     </div>

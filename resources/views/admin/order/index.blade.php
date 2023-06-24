@@ -28,7 +28,7 @@
                         </div>
                         <div class='col-md-2'>
                         <label  style="display: flex;justify-content: center;flex-direction: row;margin-top: 7px;">Show 
-                            <select style="height: 32px;width: 56px;" name="per_page"  id="per_page"  class="form-control">
+                            <select style="height: 32px;width: 80px;" name="per_page"  id="per_page"  class="form-control">
                                 <option value="10">10</option>
                                 <option value="25">25</option>
                                 <option value="50">50</option>
