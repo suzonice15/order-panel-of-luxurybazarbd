@@ -125,7 +125,7 @@ class ProductBookingController extends Controller
                     "cash_collection_amount": "' . $cash_collection . '",
                     "parcel_weight": ' . $percel_weight . ',
                     "instruction": "' . $note . '",
-                    "value": 100,
+                    "value": "' . $cash_collection . '",
                     "parcel_details_json": [ {
                             "name": "item1",
                             "category": "category1",
